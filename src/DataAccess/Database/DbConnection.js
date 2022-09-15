@@ -21,7 +21,10 @@ function runQuery(query) {
 			connection.query(query, function (error, results) {
 				connection.destroy();
 
-				if (error) reject(error);
+				if (error) {
+					console.error(error);
+					reject(error);
+				}
 				resolve(results);
 			});
 		});

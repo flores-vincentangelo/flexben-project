@@ -1,4 +1,4 @@
 ********************************************************************************
 Date/Time: 9/15/2022 
-Exception Info: "test" 
+Exception Info: {"status":500,"statusText":"Internal Server Error","message":"ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'status VARCHAR(255),\n        date_added TIMESTAMP NOT NULL DEFAULT CURRENT_TIMES' at line 10","error":{"errno":1064,"code":"INTERNAL_SERVER_ERROR","message":"ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'status VARCHAR(255),\n        date_added TIMESTAMP NOT NULL DEFAULT CURRENT_TIMES' at line 10"},"requestInfo":{"hostname":"localhost","path":"/api//config/tables"}} 
 ********************************************************************************
