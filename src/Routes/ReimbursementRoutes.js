@@ -4,6 +4,10 @@ const DataValidationHelper = require("../Helpers/DataValidationHelper");
 const jwtHelper = require("../Helpers/jwtHelper");
 const { AUDIENCE_OPTIONS } = require("../env/constants");
 
+const DbFlexCycleCutoff = require("../DataAccess/Database/DbFlexCycleCutoff");
+const DbEmployees = require("../DataAccess/Database/DbEmployees");
+const DbReimbursement = require("../DataAccess/Database/DbReimbursement");
+
 let ReimbursementRoutes = { file, test, createTransaction };
 module.exports = ReimbursementRoutes;
 
@@ -55,9 +59,28 @@ async function test(req, res, next) {
 }
 
 async function createTransaction(req, res, next) {
-	//get email of user from jwt
-	//get latest flex cycle
-	res.status(200).json({
-		...responses.OkResponseBuilder("from createTransaction"),
-	});
+	if (
+		jwtHelper
+			.getAudienceFromToken(req.cookies.token)
+			.includes(AUDIENCE_OPTIONS.ADD_REIMB_TRANSACTION)
+	) {
+		try {
+			let email = jwtHelper.getEmployeeEmailFromToken(req.cookies.token);
+			let employee = await DbEmployees.getEmployeeDetailsByEmail(email);
+			let latestFlexCycleCutoff =
+				await DbFlexCycleCutoff.getLatestFlexCycle();
+
+			await DbReimbursement.addReimbursementTransaction(
+				employee.EmployeeId,
+				latestFlexCycleCutoff.FlexCutoffId
+			);
+			res.status(201).json({
+				...responses.createdBuilder("Reimbursement Transaction Added"),
+			});
+		} catch (error) {
+			next(error);
+		}
+	} else {
+		res.status(403).json(responses.forbiddenResponse);
+	}
 }

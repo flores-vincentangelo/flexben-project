@@ -2,7 +2,7 @@ const DbConnection = require("./DbConnection");
 const mysql = require("mysql");
 const ReimbursementModel = require("../../Models/ReimbursementModel");
 
-let DbReimbursement = {};
+let DbReimbursement = { addReimbursementTransaction };
 module.exports = DbReimbursement;
 
 async function fileReimbursementItem(reimbursementItem) {
@@ -11,7 +11,7 @@ async function fileReimbursementItem(reimbursementItem) {
     etc etc`;
 	let inserts = [];
 	let query = mysql.format(sql, inserts);
-	// let result = await DbConnection.runQuery(query);
+	let result = await DbConnection.runQuery(query);
 }
 
 async function getReimbursementTransactionsByEmail(email) {
@@ -23,4 +23,10 @@ async function getReimbursementTransactionsByEmail(email) {
 	// let result = await DbConnection.runQuery(query);
 }
 
-async function createReimbursementTransactionByEmail(email) {}
+async function addReimbursementTransaction(employeeId, flexCutOffId) {
+	let sql =
+		"INSERT INTO flex_reimbursement (employee_id, flex_cut_off_id) VALUES (?, ?);";
+	let inserts = [employeeId, flexCutOffId];
+	let query = mysql.format(sql, inserts);
+	return await DbConnection.runQuery(query);
+}
