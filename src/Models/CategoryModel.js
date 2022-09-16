@@ -1,4 +1,4 @@
-class Category {
+class CategoryModel {
 	CategoryId;
 	Code;
 	Name;
@@ -8,4 +8,4 @@ class Category {
 	UpdatedDate;
 	UpdatedBy;
 }
-module.exports = Category;
+module.exports = CategoryModel;

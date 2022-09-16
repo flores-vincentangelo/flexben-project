@@ -1,6 +1,6 @@
 let fsPromise = require("node:fs/promises");
-const Category = require("../Models/Category");
-const Employee = require("../Models/Employee");
+const CategoryModel = require("../Models/CategoryModel");
+const EmployeeModel = require("../Models/EmployeeModel");
 
 // makeEmployeesQuery();
 // makeCategoriesQuery();
@@ -13,7 +13,7 @@ async function makeEmployeesQuery() {
 	let dataLineArr = await parseDataFromFile(filenameInputEmployees);
 	dataLineArr.forEach(dataLine => {
 		let dataPointArr = dataLine.split("|");
-		let employee = new Employee();
+		let employee = new EmployeeModel();
 		employee.EmployeeId = parseInt(dataPointArr[0]);
 		employee.EmployeeNumber = parseInt(dataPointArr[1]);
 		employee.FirstName = dataPointArr[2];
@@ -45,7 +45,7 @@ async function makeCategoriesQuery() {
 	let dataLineArr = await parseDataFromFile(filenameInput);
 	dataLineArr.forEach(dataLine => {
 		let dataPointArr = dataLine.split("|");
-		let category = new Category();
+		let category = new CategoryModel();
 		category.CategoryId = parseInt(dataPointArr[0]);
 		category.Code = dataPointArr[1];
 		category.Name = dataPointArr[2];

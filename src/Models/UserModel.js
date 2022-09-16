@@ -1,6 +1,7 @@
-class User {
-	Username;
-	Password;
+class UserModel {
+	EmployeeId;
+	UnhashedPassword;
+	HashedPassword;
 }
 
-module.exports = User;
+module.exports = UserModel;
