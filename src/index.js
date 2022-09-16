@@ -12,8 +12,9 @@ let router = express.Router();
 app.use(express.json());
 app.use(cookieParser());
 
-router.post("/register", UserRoutes.register);
+// router.post("/register", UserRoutes.register);
 router.post("/login", UserRoutes.login);
+router.get("/logout", UserRoutes.logout);
 
 //configure tables
 router.get("/config/tables", ConfigRoutes.tables);

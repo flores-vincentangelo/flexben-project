@@ -1,20 +1,21 @@
 const bcrypt = require("bcrypt");
 const responses = require("../Helpers/responsesHelper");
-const AccountModel = require("../Models/AccountModel");
-const DbUser = require("../DataAccess/Database/DbUser");
+const CredentialsModel = require("../Models/CredentialsModel");
+const DbAccounts = require("../DataAccess/Database/DbAccounts");
+const jwtHelper = require("../Helpers/jwtHelper");
 
-let UserRoutes = { register, login };
+let UserRoutes = { register, login, logout };
 module.exports = UserRoutes;
 
 let saltRounds = 10;
 
 async function register(req, res, next) {
-	let user = new AccountModel();
-	user.EmployeeId = req.body.employeeId;
+	let user = new CredentialsModel();
+	user.Email = req.body.email;
 	user.UnhashedPassword = req.body.password;
 
 	try {
-		let account = await DbUser.getAccountByEmployeeId(user.EmployeeId);
+		let account = await DbAccounts.getAccountByEmployeeEmail(user.Email);
 		if (account) {
 			res.status(409).json({
 				...responses.conflictResponseBuilder("User already exists"),
@@ -25,7 +26,7 @@ async function register(req, res, next) {
 			user.UnhashedPassword,
 			saltRounds
 		);
-		await DbUser.register(user);
+		await DbAccounts.register(user);
 		res.status(201).json({
 			...responses.createdBuilder("User Added"),
 		});
@@ -40,11 +41,11 @@ async function login(req, res, next) {
 	let credentials = Buffer.from(base64Encoding, "base64")
 		.toString()
 		.split(":");
-	let user = new AccountModel();
-	user.EmployeeId = credentials[0];
+	let user = new CredentialsModel();
+	user.Email = credentials[0];
 	user.UnhashedPassword = credentials[1];
 
-	if (!user.EmployeeId || !user.UnhashedPassword) {
+	if (!user.Email || !user.UnhashedPassword) {
 		res.status(401).json({
 			...responses.unathorizedResponseBuilder(invalidCredsMessage),
 		});
@@ -53,7 +54,7 @@ async function login(req, res, next) {
 
 	let account;
 	try {
-		account = await DbUser.getAccountByEmployeeId(user.EmployeeId);
+		account = await DbAccounts.getAccountByEmployeeEmail(user.Email);
 	} catch (error) {
 		next(error);
 	}
@@ -72,10 +73,18 @@ async function login(req, res, next) {
 				...responses.unathorizedResponseBuilder(invalidCredsMessage),
 			});
 		} else {
+			let token = await jwtHelper.generateToken(null, account.Email);
+			res.cookie("token", token, { httpOnly: true });
 			res.status(201).json({
 				...responses.createdBuilder("OK"),
-				data: account,
 			});
 		}
 	}
+}
+
+async function logout(req, res, next) {
+	res.clearCookie("token");
+	res.status(200).json({
+		...responses.OkResponseBuilder("Cookies cleared"),
+	});
 }

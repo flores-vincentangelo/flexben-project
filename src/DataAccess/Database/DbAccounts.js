@@ -2,8 +2,11 @@ const DbConnection = require("./DbConnection");
 const mysql = require("mysql");
 const AccountModel = require("../../Models/AccountModel");
 
-let DbUser = { register, login, getAccountByEmployeeId };
-module.exports = DbUser;
+let DbAccounts = {
+	register,
+	getAccountByEmployeeEmail,
+};
+module.exports = DbAccounts;
 
 async function register(userModel) {
 	let sql = "INSERT INTO accounts (employee_id, password) VALUES (?, ?);";
@@ -12,17 +15,20 @@ async function register(userModel) {
 	return await DbConnection.runQuery(query);
 }
 
-async function login() {}
-
-async function getAccountByEmployeeId(employeeId) {
-	let sql = "SELECT * FROM accounts WHERE employee_id = ?;";
-	let inserts = [employeeId];
+async function getAccountByEmployeeEmail(email) {
+	let sql = `SELECT employees.email, accounts.*
+    FROM accounts 
+    LEFT JOIN employees 
+    ON employees.employee_id = accounts.employee_id
+    WHERE employees.email LIKE ?;`;
+	let inserts = ["%" + email + "%"];
 	let query = mysql.format(sql, inserts);
 	let singleResultArr = await DbConnection.runQuery(query);
 
 	let account = null;
 	if (singleResultArr.length != 0) {
 		account = new AccountModel();
+		account.Email = singleResultArr[0].email;
 		account.AccountId = singleResultArr[0].account_id;
 		account.EmployeeId = singleResultArr[0].employee_id;
 		account.HashedPassword = singleResultArr[0].password;

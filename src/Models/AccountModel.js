@@ -1,7 +1,7 @@
 class AccountModel {
+	Email;
 	AccountId;
 	EmployeeId;
-	UnhashedPassword;
 	HashedPassword;
 	IsActive;
 	DateUpdated;

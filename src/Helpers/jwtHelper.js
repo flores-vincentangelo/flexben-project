@@ -1,4 +1,4 @@
-let DbUsers = require("../DataAccess/Database/DbUser");
+let DbUsers = require("../DataAccess/Database/DbAccounts");
 let { JWT_OPTIONS } = require("../env/constants");
 const jwt = require("jsonwebtoken");
 
@@ -10,7 +10,7 @@ let jwtHelper = {
 
 module.exports = jwtHelper;
 
-function getEmployeeIdFromToken(token) {
+function getEmployeeEmailFromToken(token) {
 	return jwt.decode(token)["sub"];
 }
 
@@ -18,14 +18,14 @@ function getAudienceFromToken(token) {
 	return jwt.decode(token)["aud"];
 }
 
-async function generateToken(prevToken, employeeId) {
-	const id = employeeId || getEmployeeIdFromToken(prevToken);
-	const account = await DbUsers.getAccountByEmployeeId(id);
+async function generateToken(prevToken, userEmail) {
+	const email = userEmail || getEmployeeEmailFromToken(prevToken);
+	const account = await DbUsers.getAccountByEmployeeEmail(email);
 	const options = {
 		algorithm: process.env.ALGORITHM,
 		expiresIn: process.env.EXPIRY,
 		issuer: process.env.ISSUER,
-		subject: employeeId || account[0].employeeId,
+		subject: userEmail || account.Email,
 		audience: ["CHANGE ME LATER"],
 		// user[0].role === "staff"
 		// 	? JWT_OPTIONS.STAFF_AUDIENCE
