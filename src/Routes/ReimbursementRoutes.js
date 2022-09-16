@@ -55,6 +55,8 @@ async function test(req, res, next) {
 }
 
 async function createTransaction(req, res, next) {
+	//get email of user from jwt
+	//get latest flex cycle
 	res.status(200).json({
 		...responses.OkResponseBuilder("from createTransaction"),
 	});
