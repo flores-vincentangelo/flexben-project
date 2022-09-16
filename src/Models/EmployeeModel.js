@@ -1,4 +1,4 @@
-class Employee {
+class EmployeeModel {
 	EmployeeId;
 	EmployeeNumber;
 	FirstName;
@@ -11,4 +11,4 @@ class Employee {
 	Role;
 }
 
-module.exports = Employee;
+module.exports = EmployeeModel;

@@ -7,6 +7,7 @@ const jwtHelper = require("./Helpers/jwtHelper");
 const ConfigRoutes = require("./Routes/ConfigRoutes");
 const UserRoutes = require("./Routes/UserRoutes");
 const EmployeeRoutes = require("./Routes/EmployeeRoutes");
+const ReimbursementRoutes = require("./Routes/ReimbursementRoutes");
 
 let app = express();
 
@@ -23,6 +24,8 @@ router.get(
 	jwtHelper.verifyToken,
 	EmployeeRoutes.getDetails
 );
+
+router.post("/file-reimbursement", ReimbursementRoutes.file);
 
 //configure tables
 router.get("/config/tables", ConfigRoutes.tables);
