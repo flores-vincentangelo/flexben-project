@@ -13,6 +13,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 router.post("/register", UserRoutes.register);
+router.post("/login", UserRoutes.login);
 
 //configure tables
 router.get("/config/tables", ConfigRoutes.tables);

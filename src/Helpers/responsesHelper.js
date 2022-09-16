@@ -4,6 +4,22 @@ let forbiddenResponse = {
 	message: "Insufficient authorization to access data",
 };
 
+function conflictResponseBuilder(message) {
+	return {
+		status: 409,
+		statusText: "Conflict",
+		message: message,
+	};
+}
+
+function unathorizedResponseBuilder(message) {
+	return {
+		status: 401,
+		statusText: "Unauthorized",
+		message: message,
+	};
+}
+
 function noContentResponse(message) {
 	return {
 		status: 204,
@@ -43,6 +59,8 @@ function createdBuilder(message) {
 
 let Responses = {
 	forbiddenResponse,
+	conflictResponseBuilder,
+	unathorizedResponseBuilder,
 	OkResponseBuilder,
 	notFoundBuilder,
 	noContentResponse,
