@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const responses = require("../Helpers/responsesHelper");
-const UserModel = require("../Models/UserModel");
+const AccountModel = require("../Models/AccountModel");
 const DbUser = require("../DataAccess/Database/DbUser");
 
 let UserRoutes = { register, login };
@@ -9,13 +9,13 @@ module.exports = UserRoutes;
 let saltRounds = 10;
 
 async function register(req, res, next) {
-	let user = new UserModel();
+	let user = new AccountModel();
 	user.EmployeeId = req.body.employeeId;
 	user.UnhashedPassword = req.body.password;
 
 	try {
-		let data = await DbUser.getAccountByEmployeeId(user.EmployeeId);
-		if (data.length != 0) {
+		let account = await DbUser.getAccountByEmployeeId(user.EmployeeId);
+		if (account) {
 			res.status(409).json({
 				...responses.conflictResponseBuilder("User already exists"),
 			});
@@ -40,7 +40,7 @@ async function login(req, res, next) {
 	let credentials = Buffer.from(base64Encoding, "base64")
 		.toString()
 		.split(":");
-	let user = new UserModel();
+	let user = new AccountModel();
 	user.EmployeeId = credentials[0];
 	user.UnhashedPassword = credentials[1];
 
@@ -51,22 +51,21 @@ async function login(req, res, next) {
 		return;
 	}
 
-	let data;
+	let account;
 	try {
-		data = await DbUser.getAccountByEmployeeId(user.EmployeeId);
+		account = await DbUser.getAccountByEmployeeId(user.EmployeeId);
 	} catch (error) {
 		next(error);
 	}
 
-	if (data.length != 1) {
+	if (!account) {
 		res.status(401).json({
 			...responses.unathorizedResponseBuilder(invalidCredsMessage),
 		});
 	} else {
-		let hashedPassword = data[0].password;
 		let isMatch = await bcrypt.compare(
 			user.UnhashedPassword,
-			hashedPassword
+			account.HashedPassword
 		);
 		if (!isMatch) {
 			res.status(401).json({
@@ -75,7 +74,7 @@ async function login(req, res, next) {
 		} else {
 			res.status(201).json({
 				...responses.createdBuilder("OK"),
-				data: user,
+				data: account,
 			});
 		}
 	}
