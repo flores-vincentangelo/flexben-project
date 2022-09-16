@@ -6,7 +6,7 @@ const { AUDIENCE_OPTIONS } = require("../env/constants");
 
 const DbFlexCycleCutoff = require("../DataAccess/Database/DbFlexCycleCutoff");
 const DbEmployees = require("../DataAccess/Database/DbEmployees");
-const DbReimbursement = require("../DataAccess/Database/DbReimbursement");
+const DbReimbursementTransaction = require("../DataAccess/Database/DbReimbursementTransaction");
 
 let ReimbursementRoutes = { file, test, createTransaction };
 module.exports = ReimbursementRoutes;
@@ -36,14 +36,27 @@ async function file(req, res, next) {
 				data: validationResults.errors,
 			});
 		} else {
-			//check if user has an existing reimbursement transaction
-			// if not exist,  create reimbursement transaction
-			// if exists okay
-			//db function
-			res.status(200).json({
-				...responses.createdBuilder("Reimbursement Filed"),
-				data: reimbursementItem,
-			});
+			try {
+				let email = jwtHelper.getEmployeeEmailFromToken(
+					req.cookies.token
+				);
+				let hasTransaction =
+					await DbReimbursementTransaction.getLatestDraftReimbursementTransactionByEmail(
+						email
+					);
+				if (hasTransaction) {
+					//file
+				} else {
+					await addReimbursementTransaction(email);
+					//file
+				}
+				res.status(200).json({
+					...responses.createdBuilder("Reimbursement Filed"),
+					data: reimbursementItem,
+				});
+			} catch (error) {
+				next(error);
+			}
 		}
 	} else {
 		res.status(403).json(responses.forbiddenResponse);
@@ -66,21 +79,37 @@ async function createTransaction(req, res, next) {
 	) {
 		try {
 			let email = jwtHelper.getEmployeeEmailFromToken(req.cookies.token);
-			let employee = await DbEmployees.getEmployeeDetailsByEmail(email);
-			let latestFlexCycleCutoff =
-				await DbFlexCycleCutoff.getLatestFlexCycle();
-
-			await DbReimbursement.addReimbursementTransaction(
-				employee.EmployeeId,
-				latestFlexCycleCutoff.FlexCutoffId
-			);
-			res.status(201).json({
-				...responses.createdBuilder("Reimbursement Transaction Added"),
-			});
+			let hasTransaction =
+				await DbReimbursementTransaction.getLatestDraftReimbursementTransactionByEmail(
+					email
+				);
+			if (hasTransaction) {
+				res.status(400).json({
+					...responses.badRequestResponseBuilder(
+						"Already have an exisiting transaction"
+					),
+				});
+			} else {
+				await addReimbursementTransaction(email);
+				res.status(201).json({
+					...responses.createdBuilder(
+						"Reimbursement Transaction Added"
+					),
+				});
+			}
 		} catch (error) {
 			next(error);
 		}
 	} else {
 		res.status(403).json(responses.forbiddenResponse);
 	}
+}
+
+async function addReimbursementTransaction(email) {
+	let employee = await DbEmployees.getEmployeeDetailsByEmail(email);
+	let latestFlexCycleCutoff = await DbFlexCycleCutoff.getLatestFlexCycle();
+	await DbReimbursementTransaction.addReimbursementTransaction(
+		employee.EmployeeId,
+		latestFlexCycleCutoff.FlexCutoffId
+	);
 }
