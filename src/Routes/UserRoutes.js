@@ -4,7 +4,7 @@ const CredentialsModel = require("../Models/CredentialsModel");
 const DbAccounts = require("../DataAccess/Database/DbAccounts");
 const jwtHelper = require("../Helpers/jwtHelper");
 
-let UserRoutes = { register, login, logout };
+let UserRoutes = { login, logout };
 module.exports = UserRoutes;
 
 let saltRounds = 10;
