@@ -3,7 +3,8 @@ let express = require("express");
 const cookieParser = require("cookie-parser");
 const errorHelper = require("./Helpers/errorHelper");
 
-let Config = require("./Routes/Config");
+let ConfigRoutes = require("./Routes/ConfigRoutes");
+let UserRoutes = require("./Routes/UserRoutes");
 
 let app = express();
 
@@ -11,8 +12,10 @@ let router = express.Router();
 app.use(express.json());
 app.use(cookieParser());
 
+router.post("/register", UserRoutes.register);
+
 //configure tables
-router.get("/config/tables", Config.tables);
+router.get("/config/tables", ConfigRoutes.tables);
 
 app.use("/api/", router);
 

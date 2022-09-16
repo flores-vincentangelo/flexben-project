@@ -1,4 +1,4 @@
-const responses = require("../Helpers/responses");
+const responses = require("../Helpers/responsesHelper");
 let Config = { tables };
 let DbConfigTables = require("../DataAccess/Database/DbConfigTables");
 

@@ -33,11 +33,20 @@ function notFoundBuilder(category, parameter, value) {
 	};
 }
 
+function createdBuilder(message) {
+	return {
+		status: 201,
+		statusText: "Created",
+		message: message,
+	};
+}
+
 let Responses = {
 	forbiddenResponse,
 	OkResponseBuilder,
 	notFoundBuilder,
 	noContentResponse,
+	createdBuilder,
 };
 
 module.exports = Responses;
