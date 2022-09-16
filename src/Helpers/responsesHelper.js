@@ -1,17 +1,31 @@
-let forbiddenResponse = {
-	status: 403,
-	statusText: "Forbidden",
-	message: "Insufficient authorization to access data",
-};
-
-function conflictResponseBuilder(message) {
+function OkResponseBuilder(message) {
 	return {
-		status: 409,
-		statusText: "Conflict",
+		status: 200,
+		statusText: "OK",
 		message: message,
 	};
 }
-
+function createdBuilder(message) {
+	return {
+		status: 201,
+		statusText: "Created",
+		message: message,
+	};
+}
+function noContentResponse(message) {
+	return {
+		status: 204,
+		statusText: "No Content",
+		message: message,
+	};
+}
+function badRequestResponseBuilder(message) {
+	return {
+		status: 400,
+		statusTest: "Bad Request",
+		message: message,
+	};
+}
 function unathorizedResponseBuilder(message) {
 	return {
 		status: 401,
@@ -20,22 +34,11 @@ function unathorizedResponseBuilder(message) {
 	};
 }
 
-function noContentResponse(message) {
-	return {
-		status: 204,
-		statusText: "No Content",
-		message: message,
-	};
-}
-
-function OkResponseBuilder(message) {
-	return {
-		status: 200,
-		statusText: "OK",
-		message: message,
-	};
-}
-
+let forbiddenResponse = {
+	status: 403,
+	statusText: "Forbidden",
+	message: "Insufficient authorization to access data",
+};
 function notFoundBuilder(category, parameter, value) {
 	let message = `The ${category} with ${parameter}: ${value} could not be found`;
 	return {
@@ -49,22 +52,23 @@ function notFoundBuilder(category, parameter, value) {
 	};
 }
 
-function createdBuilder(message) {
+function conflictResponseBuilder(message) {
 	return {
-		status: 201,
-		statusText: "Created",
+		status: 409,
+		statusText: "Conflict",
 		message: message,
 	};
 }
 
 let Responses = {
-	forbiddenResponse,
-	conflictResponseBuilder,
-	unathorizedResponseBuilder,
 	OkResponseBuilder,
-	notFoundBuilder,
-	noContentResponse,
 	createdBuilder,
+	noContentResponse,
+	badRequestResponseBuilder,
+	unathorizedResponseBuilder,
+	forbiddenResponse,
+	notFoundBuilder,
+	conflictResponseBuilder,
 };
 
 module.exports = Responses;

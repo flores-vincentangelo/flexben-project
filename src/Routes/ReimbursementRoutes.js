@@ -1,5 +1,6 @@
 const responses = require("../Helpers/responsesHelper");
 const ReimbursementModel = require("../Models/ReimbursementModel");
+const DataValidationHelper = require("../Helpers/DataValidationHelper");
 
 let ReimbursementRoutes = { file };
 module.exports = ReimbursementRoutes;
@@ -13,8 +14,13 @@ async function file(req, res, next) {
 	reimbursementItem.Amount = req.body.amount;
 	reimbursementItem.Category = req.body.category;
 
-	res.status(200).json({
-		...responses.OkResponseBuilder("OK"),
-		data: req.body,
-	});
+	let validationResults =
+		DataValidationHelper.validateReimbursementItem(reimbursementItem);
+
+	if (validationResults.errors.length != 0) {
+		res.status(400).json({
+			...responses.badRequestResponseBuilder(validationResults.message),
+			data: validationResults.errors,
+		});
+	}
 }
