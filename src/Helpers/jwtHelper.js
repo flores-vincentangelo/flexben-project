@@ -1,6 +1,7 @@
 let DbUsers = require("../DataAccess/Database/DbAccounts");
 let { JWT_OPTIONS } = require("../env/constants");
 const jwt = require("jsonwebtoken");
+const responses = require("../Helpers/responsesHelper");
 
 let jwtHelper = {
 	generateToken,
@@ -38,18 +39,18 @@ function verifyToken(req, res, next) {
 	const token = req.cookies.token;
 	if (!token) {
 		res.status(401).json({
-			status: 401,
-			statusText: "Unauthorized",
-			message: "Not authorized to access data",
+			...responses.unathorizedResponseBuilder(
+				"Not authorized to access data"
+			),
 		});
 	} else {
 		jwt.verify(token, process.env.SECRET, function (err) {
 			if (err) {
 				res.clearCookie("token");
 				res.status(401).json({
-					status: 401,
-					statusText: "Unauthorized",
-					message: "Please login again",
+					...responses.unathorizedResponseBuilder(
+						"Please login again"
+					),
 				});
 			} else next();
 		});

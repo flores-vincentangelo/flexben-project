@@ -5,6 +5,7 @@ const errorHelper = require("./Helpers/errorHelper");
 
 let ConfigRoutes = require("./Routes/ConfigRoutes");
 let UserRoutes = require("./Routes/UserRoutes");
+let EmployeeRoutes = require("./Routes/EmployeeRoutes");
 
 let app = express();
 
@@ -15,6 +16,8 @@ app.use(cookieParser());
 // router.post("/register", UserRoutes.register);
 router.post("/login", UserRoutes.login);
 router.get("/logout", UserRoutes.logout);
+
+router.get("/employee-details", EmployeeRoutes.getDetails);
 
 //configure tables
 router.get("/config/tables", ConfigRoutes.tables);
