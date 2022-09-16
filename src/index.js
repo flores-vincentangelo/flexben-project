@@ -2,10 +2,11 @@ require("dotenv").config({ path: "./src/env/variables.env" });
 let express = require("express");
 const cookieParser = require("cookie-parser");
 const errorHelper = require("./Helpers/errorHelper");
+const jwtHelper = require("./Helpers/jwtHelper");
 
-let ConfigRoutes = require("./Routes/ConfigRoutes");
-let UserRoutes = require("./Routes/UserRoutes");
-let EmployeeRoutes = require("./Routes/EmployeeRoutes");
+const ConfigRoutes = require("./Routes/ConfigRoutes");
+const UserRoutes = require("./Routes/UserRoutes");
+const EmployeeRoutes = require("./Routes/EmployeeRoutes");
 
 let app = express();
 
@@ -17,7 +18,11 @@ app.use(cookieParser());
 router.post("/login", UserRoutes.login);
 router.get("/logout", UserRoutes.logout);
 
-router.get("/employee-details", EmployeeRoutes.getDetails);
+router.get(
+	"/employee-details",
+	jwtHelper.verifyToken,
+	EmployeeRoutes.getDetails
+);
 
 //configure tables
 router.get("/config/tables", ConfigRoutes.tables);

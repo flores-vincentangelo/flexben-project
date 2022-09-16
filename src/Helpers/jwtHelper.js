@@ -7,6 +7,7 @@ let jwtHelper = {
 	generateToken,
 	verifyToken,
 	getAudienceFromToken,
+	getEmployeeEmailFromToken,
 };
 
 module.exports = jwtHelper;

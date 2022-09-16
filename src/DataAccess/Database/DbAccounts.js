@@ -26,7 +26,7 @@ async function getAccountByEmployeeEmail(email) {
 	let singleResultArr = await DbConnection.runQuery(query);
 
 	let account = null;
-	if (singleResultArr.length != 0) {
+	if (singleResultArr.length === 1) {
 		account = new AccountModel();
 		account.Email = singleResultArr[0].email;
 		account.AccountId = singleResultArr[0].account_id;

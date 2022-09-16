@@ -8,6 +8,7 @@ class Employee {
 	DateAdded;
 	CompanyId;
 	RoleId;
+	Role;
 }
 
 module.exports = Employee;
