@@ -25,7 +25,16 @@ router.get(
 	EmployeeRoutes.getDetails
 );
 
-router.post("/file-reimbursement", ReimbursementRoutes.file);
+router.get("/test", ReimbursementRoutes.test);
+router.post(
+	"/file-reimbursement",
+	jwtHelper.verifyToken,
+	ReimbursementRoutes.file
+);
+router.get(
+	"/create-reimbursement-transaction",
+	ReimbursementRoutes.createTransaction
+);
 
 //configure tables
 router.get("/config/tables", ConfigRoutes.tables);

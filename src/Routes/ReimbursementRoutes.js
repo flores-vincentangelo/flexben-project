@@ -3,9 +3,8 @@ const ReimbursementModel = require("../Models/ReimbursementModel");
 const DataValidationHelper = require("../Helpers/DataValidationHelper");
 const jwtHelper = require("../Helpers/jwtHelper");
 const { AUDIENCE_OPTIONS } = require("../env/constants");
-const e = require("express");
 
-let ReimbursementRoutes = { file };
+let ReimbursementRoutes = { file, test, createTransaction };
 module.exports = ReimbursementRoutes;
 
 async function file(req, res, next) {
@@ -33,6 +32,9 @@ async function file(req, res, next) {
 				data: validationResults.errors,
 			});
 		} else {
+			//check if user has an existing reimbursement transaction
+			// if not exist,  create reimbursement transaction
+			// if exists okay
 			//db function
 			res.status(200).json({
 				...responses.createdBuilder("Reimbursement Filed"),
@@ -42,4 +44,18 @@ async function file(req, res, next) {
 	} else {
 		res.status(403).json(responses.forbiddenResponse);
 	}
+}
+
+async function test(req, res, next) {
+	try {
+		res.redirect("/api/create-reimbursement-transaction");
+	} catch (error) {
+		next(error);
+	}
+}
+
+async function createTransaction(req, res, next) {
+	res.status(200).json({
+		...responses.OkResponseBuilder("from createTransaction"),
+	});
 }
