@@ -24,7 +24,7 @@ async function file(req, res, next) {
 		reimbursementItem.NameEstablishment = req.body.nameEstablishment;
 		reimbursementItem.TinEstablishment = req.body.tinEstablishment;
 		reimbursementItem.Amount = req.body.amount;
-		reimbursementItem.Category = req.body.category;
+		reimbursementItem.CategoryCode = req.body.category;
 
 		let validationResults =
 			DataValidationHelper.validateReimbursementItem(reimbursementItem);

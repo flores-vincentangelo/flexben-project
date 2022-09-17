@@ -4,7 +4,7 @@ class ReimbursementItemModel {
 	NameEstablishment;
 	TinEstablishment;
 	Amount;
-	Category;
+	CategoryCode;
 }
 
 module.exports = ReimbursementItemModel;
