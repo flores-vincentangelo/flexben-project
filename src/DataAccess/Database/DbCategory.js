@@ -2,7 +2,7 @@ const DbConnection = require("./DbConnection");
 const mysql = require("mysql");
 const CategoryModel = require("../../Models/CategoryModel");
 
-let DbCategory = { getCategoryByCode };
+let DbCategory = { getCategoryByCode, getAll };
 module.exports = DbCategory;
 
 async function getCategoryByCode(code) {
@@ -24,4 +24,25 @@ async function getCategoryByCode(code) {
 		category.UpdatedBy = singleResultArr[0].updated_by;
 	}
 	return category;
+}
+
+async function getAll() {
+	let query = "SELECT * FROM categories;";
+	let resultArr = await DbConnection.runQuery(query);
+
+	let categoryArr = [];
+	resultArr.forEach(element => {
+		let category = new CategoryModel();
+		category.CategoryId = element.category_id;
+		category.Code = element.code;
+		category.Name = element.name;
+		category.Description = element.description;
+		category.DateAdded = element.date_added;
+		category.AddedBy = element.added_by;
+		category.UpdatedDate = element.updated_date;
+		category.UpdatedBy = element.updated_by;
+		categoryArr.push(category);
+	});
+
+	return categoryArr;
 }

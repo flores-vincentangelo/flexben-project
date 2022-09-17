@@ -28,7 +28,7 @@ async function validateReimbursementItem(reimbursementItem) {
 	}
 
 	if (!category) {
-		message += "Invalid category code.";
+		message += "Invalid category code. ";
 		errors.push("category");
 	}
 

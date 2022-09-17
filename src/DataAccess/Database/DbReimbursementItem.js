@@ -21,3 +21,7 @@ async function file(reimbursementItem) {
 	let query = mysql.format(sql, inserts);
 	await DbConnection.runQuery(query);
 }
+
+async function getItemsByEmail(email) {
+	// let sql = `SELECT * FROM `
+}

@@ -12,6 +12,21 @@ const DbReimbursementItem = require("../DataAccess/Database/DbReimbursementItem"
 let ReimbursementRoutes = { file, test, createTransaction };
 module.exports = ReimbursementRoutes;
 
+// "Employee should be able to add a reimbursement item to an active cut-off with the following details:
+// - Date (mm/dd/yyyy) - add validation rules (you should not be able to add a different year and there should be no date greater than the current date)
+// - OR Number
+// - Name of establishment
+// - TIN of establishment
+// - Amount (minimum 500, this amount should be configurable)
+// - Category (from category catalog)
+
+// Reimbursement item should be added to the reimbursement list
+// Total reimburseable amount should be returned
+
+// The system should be able to detect if the reimbursement amount is greater than the maximum reimburseable amount for the given cut-off.
+
+// *Initial status of the reimbursement and reimbursement items/details should be ""Draft"""
+
 async function file(req, res, next) {
 	if (
 		jwtHelper
@@ -26,11 +41,24 @@ async function file(req, res, next) {
 		reimbursementItem.Amount = req.body.amount;
 		reimbursementItem.CategoryCode = req.body.category;
 
+		let email = jwtHelper.getEmployeeEmailFromToken(req.cookies.token);
+
 		try {
-			let validationResults =
-				await DataValidationHelper.validateReimbursementItem(
-					reimbursementItem
-				);
+			let reimbTrans =
+				await DbReimbursementTransaction.getLatestDraftByEmail(email);
+
+			if (!reimbTrans) {
+				await addReimbursementTransaction(email);
+				reimbTrans =
+					await DbReimbursementTransaction.getLatestDraftByEmail(
+						email
+					);
+			}
+			reimbursementItem.ReimTransId = reimbTrans.FlexReimbursementId;
+			let validationResults = await validateReimbItem(
+				reimbursementItem,
+				reimbTrans
+			);
 
 			if (validationResults.errors.length != 0) {
 				res.status(400).json({
@@ -42,27 +70,8 @@ async function file(req, res, next) {
 			} else {
 				reimbursementItem = { ...validationResults.reimbursementItem };
 
-				let email = jwtHelper.getEmployeeEmailFromToken(
-					req.cookies.token
-				);
-				let hasTransaction =
-					await DbReimbursementTransaction.getLatestDraftReimbursementTransactionByEmail(
-						email
-					);
-				if (hasTransaction) {
-					reimbursementItem.ReimTransId =
-						hasTransaction.FlexReimbursementId;
-					await DbReimbursementItem.file(reimbursementItem);
-				} else {
-					await addReimbursementTransaction(email);
-					let transaction =
-						await DbReimbursementTransaction.getLatestDraftReimbursementTransactionByEmail(
-							email
-						);
-					reimbursementItem.ReimTransId =
-						transaction.FlexReimbursementId;
-					await DbReimbursementItem.file(reimbursementItem);
-				}
+				await DbReimbursementItem.file(reimbursementItem);
+				//recalculate max amount
 				let token = await jwtHelper.generateToken(
 					req.cookies.token,
 					null
@@ -98,9 +107,7 @@ async function createTransaction(req, res, next) {
 		try {
 			let email = jwtHelper.getEmployeeEmailFromToken(req.cookies.token);
 			let hasTransaction =
-				await DbReimbursementTransaction.getLatestDraftReimbursementTransactionByEmail(
-					email
-				);
+				await DbReimbursementTransaction.getLatestDraftByEmail(email);
 			if (hasTransaction) {
 				res.status(400).json({
 					...responses.badRequestResponseBuilder(
@@ -135,4 +142,23 @@ async function addReimbursementTransaction(email) {
 		employee.EmployeeId,
 		latestFlexCycleCutoff.FlexCutoffId
 	);
+}
+
+async function validateReimbItem(reimbursementItem, reimbTrans) {
+	let flexCycle = await DbFlexCycleCutoff.getByFlexCycleId(
+		reimbTrans.FlexCutoffId
+	);
+	let newTotal =
+		reimbTrans.TotalReimbursementAmount + reimbursementItem.Amount;
+
+	let validationResults =
+		await DataValidationHelper.validateReimbursementItem(reimbursementItem);
+
+	if (newTotal > flexCycle.CutoffCapAmount) {
+		validationResults.message +=
+			"Adding this reimbursement item will exceed the maximum reimbursement amount for your flex cycle. ";
+		validationResults.errors.push("amount");
+	}
+
+	return validationResults;
 }

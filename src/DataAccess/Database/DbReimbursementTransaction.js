@@ -3,13 +3,13 @@ const mysql = require("mysql");
 const ReimbursementTransactionModel = require("../../Models/ReimbursementTransactionModel");
 
 let DbReimbursementTransaction = {
-	addReimbursementTransaction,
-	getLatestDraftReimbursementTransactionByEmail,
+	add,
+	getLatestDraftByEmail,
 };
 
 module.exports = DbReimbursementTransaction;
 
-async function addReimbursementTransaction(employeeId, flexCutOffId) {
+async function add(employeeId, flexCutOffId) {
 	let sql =
 		"INSERT INTO flex_reimbursement (employee_id, flex_cut_off_id) VALUES (?, ?);";
 	let inserts = [employeeId, flexCutOffId];
@@ -17,7 +17,7 @@ async function addReimbursementTransaction(employeeId, flexCutOffId) {
 	return await DbConnection.runQuery(query);
 }
 
-async function getLatestDraftReimbursementTransactionByEmail(email) {
+async function getLatestDraftByEmail(email) {
 	let sql = `SELECT flex_reimbursement.*
             FROM flex_reimbursement
             LEFT JOIN employees
