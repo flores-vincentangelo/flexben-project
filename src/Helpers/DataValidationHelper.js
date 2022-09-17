@@ -1,3 +1,5 @@
+const DbCategory = require("../DataAccess/Database/DbCategory");
+
 let DataValidationHelper = {
 	validateReimbursementItem,
 	dateAfterCurrent,
@@ -5,9 +7,13 @@ let DataValidationHelper = {
 };
 module.exports = DataValidationHelper;
 
-function validateReimbursementItem(reimbursementItem) {
+async function validateReimbursementItem(reimbursementItem) {
 	let isDateIncorrect = dateAfterCurrent(reimbursementItem.Date);
 	let isAmountCorrect = amountAboveMinimum(reimbursementItem.Amount);
+	let category = await DbCategory.getCategoryByCode(
+		reimbursementItem.CategoryCode
+	);
+
 	let message = "";
 	let errors = [];
 
@@ -21,7 +27,16 @@ function validateReimbursementItem(reimbursementItem) {
 		errors.push("amount");
 	}
 
+	if (!category) {
+		message += "Invalid category code.";
+		errors.push("category");
+	}
+
 	return {
+		reimbursementItem: {
+			...reimbursementItem,
+			CategoryId: category ? category.CategoryId : null,
+		},
 		message,
 		errors,
 	};

@@ -1,6 +1,12 @@
 const DataValidationHelper = require("../Helpers/DataValidationHelper");
 const ReimbursementItemModel = require("../Models/ReimbursementItemModel");
 
+jest.mock("../DataAccess/Database/DbCategory", () => ({
+	getCategoryByCode: jest.fn(),
+}));
+
+const mockDbCategory = require("../DataAccess/Database/DbCategory");
+
 test("dateAfterCurrent pastDateString false", () => {
 	let pastDateStr = "08/20/2018";
 	let isFalse = DataValidationHelper.dateAfterCurrent(pastDateStr);
@@ -28,6 +34,7 @@ describe("process.env", () => {
 	beforeEach(() => {
 		jest.resetModules();
 		process.env = { ...env };
+		process.env.APPMINAMT = 500;
 	});
 
 	afterEach(() => {
@@ -35,20 +42,16 @@ describe("process.env", () => {
 	});
 
 	test("amountAboveMinimum amountAboveMinimum true", () => {
-		process.env.APPMINAMT = 300;
-
-		let isTrue = DataValidationHelper.amountAboveMinimum(350);
+		let isTrue = DataValidationHelper.amountAboveMinimum(550);
 		expect(isTrue).toBeTruthy();
 	});
 
 	test("amountAboveMinimum amountBelowMinimum false", () => {
-		process.env.APPMINAMT = 900;
-
-		let isFalse = DataValidationHelper.amountAboveMinimum(600);
+		let isFalse = DataValidationHelper.amountAboveMinimum(300);
 		expect(isFalse).toBeFalsy();
 	});
 
-	test("validateReimbursementItem futureDate returnFailMessage", () => {
+	test("validateReimbursementItem futureDate returnFailMessage", async () => {
 		let reimbursementItem = new ReimbursementItemModel();
 		reimbursementItem.Date = "12/12/2099";
 		reimbursementItem.OrNumber = "11111222223333";
@@ -58,7 +61,9 @@ describe("process.env", () => {
 		reimbursementItem.Category = "FOODC";
 
 		let returnedValue =
-			DataValidationHelper.validateReimbursementItem(reimbursementItem);
+			await DataValidationHelper.validateReimbursementItem(
+				reimbursementItem
+			);
 
 		expect(returnedValue.message).toContain(
 			"Invalid date. Date can't be later than today."
@@ -66,8 +71,7 @@ describe("process.env", () => {
 		expect(returnedValue.errors).toContain("date");
 	});
 
-	test("validateReimbursementItem belowMinimumAmt returnFailMessage", () => {
-		process.env.APPMINAMT = 900;
+	test("validateReimbursementItem belowMinimumAmt returnFailMessage", async () => {
 		let reimbursementItem = new ReimbursementItemModel();
 		reimbursementItem.Date = "08/20/2018";
 		reimbursementItem.OrNumber = "11111222223333";
@@ -77,7 +81,9 @@ describe("process.env", () => {
 		reimbursementItem.Category = "FOODC";
 
 		let returnedValue =
-			DataValidationHelper.validateReimbursementItem(reimbursementItem);
+			await DataValidationHelper.validateReimbursementItem(
+				reimbursementItem
+			);
 
 		expect(returnedValue.message).toContain(
 			"Invalid amount. amount can't be lower than minimum."
@@ -85,8 +91,7 @@ describe("process.env", () => {
 		expect(returnedValue.errors).toContain("amount");
 	});
 
-	test("validateReimbursementItem belowMinimumAmt&futureDate returnFailMessage", () => {
-		process.env.APPMINAMT = 900;
+	test("validateReimbursementItem belowMinimumAmt&futureDate returnFailMessage", async () => {
 		let reimbursementItem = new ReimbursementItemModel();
 		reimbursementItem.Date = "08/20/2099";
 		reimbursementItem.OrNumber = "11111222223333";
@@ -96,7 +101,9 @@ describe("process.env", () => {
 		reimbursementItem.Category = "FOODC";
 
 		let returnedValue =
-			DataValidationHelper.validateReimbursementItem(reimbursementItem);
+			await DataValidationHelper.validateReimbursementItem(
+				reimbursementItem
+			);
 
 		expect(returnedValue.message).toContain(
 			"Invalid amount. amount can't be lower than minimum."
@@ -108,7 +115,35 @@ describe("process.env", () => {
 		expect(returnedValue.errors).toContain("date");
 	});
 
-	test("validateReimbursementItem allCorrect returnEmptyErrorsArr", () => {
+	test("validateReimbursementItem wrongCategoryCode returnFailMessage", async () => {
+		let reimbursementItem = new ReimbursementItemModel();
+		reimbursementItem.Date = "08/20/2018";
+		reimbursementItem.OrNumber = "11111222223333";
+		reimbursementItem.NameEstablishment = "Jollibee";
+		reimbursementItem.TinEstablishment = "1111111111111";
+		reimbursementItem.Amount = 600;
+		reimbursementItem.Category = "FAKE_CODE";
+		let returnedValue =
+			await DataValidationHelper.validateReimbursementItem(
+				reimbursementItem
+			);
+
+		expect(returnedValue.message).toContain("Invalid category code.");
+		expect(returnedValue.errors).toContain("category");
+	});
+
+	test("validateReimbursementItem allCorrect returnEmptyErrorsArr", async () => {
+		mockDbCategory.getCategoryByCode.mockReturnValueOnce({
+			CategoryId: 4,
+			Code: "",
+			Name: "",
+			Description: "",
+			DateAdded: "",
+			AddedBy: "",
+			UpdatedDate: "",
+			UpdatedBy: "",
+		});
+
 		process.env.APPMINAMT = 300;
 		let reimbursementItem = new ReimbursementItemModel();
 		reimbursementItem.Date = "08/20/2018";
@@ -119,7 +154,9 @@ describe("process.env", () => {
 		reimbursementItem.Category = "FOODC";
 
 		let returnedValue =
-			DataValidationHelper.validateReimbursementItem(reimbursementItem);
+			await DataValidationHelper.validateReimbursementItem(
+				reimbursementItem
+			);
 
 		expect(returnedValue.errors.length).toBe(0);
 	});
