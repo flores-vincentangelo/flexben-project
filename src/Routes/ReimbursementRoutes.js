@@ -61,10 +61,7 @@ async function file(req, res, next) {
 						);
 					reimbursementItem.ReimTransId =
 						transaction.FlexReimbursementId;
-					await DbReimbursementItem.file(
-						transaction.FlexReimbursementId,
-						reimbursementItem
-					);
+					await DbReimbursementItem.file(reimbursementItem);
 				}
 				let token = await jwtHelper.generateToken(
 					req.cookies.token,
