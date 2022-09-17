@@ -15,10 +15,9 @@ async function file(reimTransId, reimbursementItem) {
 		reimbursementItem.NameEstablishment,
 		reimbursementItem.TinEstablishment,
 		reimbursementItem.Amount,
-		reimbursementItem.Category,
+		reimbursementItem.CategoryId,
 		reimbursementItem.Date,
 	];
 	let query = mysql.format(sql, inserts);
-	console.log(query);
-	// let result = await DbConnection.runQuery(query);
+	await DbConnection.runQuery(query);
 }

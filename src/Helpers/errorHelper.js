@@ -11,9 +11,16 @@ let errorHelpers = {
 module.exports = errorHelpers;
 
 function logErrorsToConsole(err, req, res, next) {
-	console.error(
-		`Log Entry: ${JSON.stringify(errorHelpers.errorBuilder(err))}`
-	);
+	let errorObj = errorHelpers.errorBuilder(err);
+	errorObj = {
+		...errorObj,
+		error: {
+			...errorObj.error,
+			stack: err.stack,
+		},
+	};
+
+	console.error(`Log Entry: ${JSON.stringify(errorObj)}`);
 	console.error("*".repeat(80));
 	next(err);
 }
@@ -25,6 +32,10 @@ function logErrorsToFile(err, req, res, next) {
 		hostname: req.hostname,
 		path: req.path,
 		app: req.app,
+	};
+
+	errorObject.error = {
+		stack: err.stack,
 	};
 
 	errorLog.writeToFile(errorObject);

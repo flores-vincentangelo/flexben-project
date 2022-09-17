@@ -26,18 +26,22 @@ async function file(req, res, next) {
 		reimbursementItem.Amount = req.body.amount;
 		reimbursementItem.CategoryCode = req.body.category;
 
-		let validationResults =
-			DataValidationHelper.validateReimbursementItem(reimbursementItem);
+		try {
+			let validationResults =
+				await DataValidationHelper.validateReimbursementItem(
+					reimbursementItem
+				);
 
-		if (validationResults.errors.length != 0) {
-			res.status(400).json({
-				...responses.badRequestResponseBuilder(
-					validationResults.message
-				),
-				data: validationResults.errors,
-			});
-		} else {
-			try {
+			if (validationResults.errors.length != 0) {
+				res.status(400).json({
+					...responses.badRequestResponseBuilder(
+						validationResults.message
+					),
+					data: validationResults.errors,
+				});
+			} else {
+				reimbursementItem = { ...validationResults.reimbursementItem };
+
 				let email = jwtHelper.getEmployeeEmailFromToken(
 					req.cookies.token
 				);
@@ -70,9 +74,9 @@ async function file(req, res, next) {
 					...responses.createdBuilder("Reimbursement Filed"),
 					data: reimbursementItem,
 				});
-			} catch (error) {
-				next(error);
 			}
+		} catch (error) {
+			next(error);
 		}
 	} else {
 		res.status(403).json(responses.forbiddenResponse);
@@ -99,7 +103,6 @@ async function createTransaction(req, res, next) {
 				await DbReimbursementTransaction.getLatestDraftReimbursementTransactionByEmail(
 					email
 				);
-			console.log(email);
 			if (hasTransaction) {
 				res.status(400).json({
 					...responses.badRequestResponseBuilder(

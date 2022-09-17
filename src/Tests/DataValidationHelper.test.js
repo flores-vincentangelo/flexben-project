@@ -159,5 +159,7 @@ describe("process.env", () => {
 			);
 
 		expect(returnedValue.errors.length).toBe(0);
+		expect(returnedValue.reimbursementItem).toBeTruthy();
+		expect(returnedValue.reimbursementItem.CategoryId).toBe(4);
 	});
 });

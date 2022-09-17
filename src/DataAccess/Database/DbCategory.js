@@ -13,7 +13,7 @@ async function getCategoryByCode(code) {
 
 	let category;
 	if (singleResultArr.length === 1) {
-		category = CategoryModel();
+		category = new CategoryModel();
 		category.CategoryId = singleResultArr[0].category_id;
 		category.Code = singleResultArr[0].code;
 		category.Name = singleResultArr[0].name;
