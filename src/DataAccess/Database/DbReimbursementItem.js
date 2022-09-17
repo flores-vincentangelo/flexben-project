@@ -1,15 +1,24 @@
 const DbConnection = require("./DbConnection");
 const mysql = require("mysql");
-const ReimbursementModel = require("../../Models/ReimbursementModel");
 
-let DbReimbursementItem = { fileReimbursementItem };
+let DbReimbursementItem = { file };
 module.exports = DbReimbursementItem;
 
-async function fileReimbursementItem(reimbursementItem) {
-	let sql = `
-    insert 
-    etc etc`;
-	let inserts = [];
+async function file(reimTransId, reimbursementItem) {
+	let sql = `INSERT INTO flex_reimbursement_details  
+    (flex_reimbursement_id, or_number, name_of_establishment, tin_of_establishment, amount, category_id, date_added) 
+    VALUES (?, ?, ?, ?, ?, ?, ?);`;
+
+	let inserts = [
+		reimTransId,
+		reimbursementItem.OrNumber,
+		reimbursementItem.NameEstablishment,
+		reimbursementItem.TinEstablishment,
+		reimbursementItem.Amount,
+		reimbursementItem.Category,
+		reimbursementItem.Date,
+	];
 	let query = mysql.format(sql, inserts);
-	let result = await DbConnection.runQuery(query);
+	console.log(query);
+	// let result = await DbConnection.runQuery(query);
 }

@@ -1,4 +1,4 @@
-class ReimbursementModel {
+class ReimbursementItemModel {
 	Date;
 	OrNumber;
 	NameEstablishment;
@@ -7,4 +7,4 @@ class ReimbursementModel {
 	Category;
 }
 
-module.exports = ReimbursementModel;
+module.exports = ReimbursementItemModel;

@@ -1,5 +1,5 @@
 const DataValidationHelper = require("../Helpers/DataValidationHelper");
-const ReimbursementModel = require("../Models/ReimbursementModel");
+const ReimbursementItemModel = require("../Models/ReimbursementItemModel");
 
 test("dateAfterCurrent pastDateString false", () => {
 	let pastDateStr = "08/20/2018";
@@ -49,7 +49,7 @@ describe("process.env", () => {
 	});
 
 	test("validateReimbursementItem futureDate returnFailMessage", () => {
-		let reimbursementItem = new ReimbursementModel();
+		let reimbursementItem = new ReimbursementItemModel();
 		reimbursementItem.Date = "12/12/2099";
 		reimbursementItem.OrNumber = "11111222223333";
 		reimbursementItem.NameEstablishment = "Jollibee";
@@ -68,7 +68,7 @@ describe("process.env", () => {
 
 	test("validateReimbursementItem belowMinimumAmt returnFailMessage", () => {
 		process.env.APPMINAMT = 900;
-		let reimbursementItem = new ReimbursementModel();
+		let reimbursementItem = new ReimbursementItemModel();
 		reimbursementItem.Date = "08/20/2018";
 		reimbursementItem.OrNumber = "11111222223333";
 		reimbursementItem.NameEstablishment = "Jollibee";
@@ -87,7 +87,7 @@ describe("process.env", () => {
 
 	test("validateReimbursementItem belowMinimumAmt&futureDate returnFailMessage", () => {
 		process.env.APPMINAMT = 900;
-		let reimbursementItem = new ReimbursementModel();
+		let reimbursementItem = new ReimbursementItemModel();
 		reimbursementItem.Date = "08/20/2099";
 		reimbursementItem.OrNumber = "11111222223333";
 		reimbursementItem.NameEstablishment = "Jollibee";
@@ -110,7 +110,7 @@ describe("process.env", () => {
 
 	test("validateReimbursementItem allCorrect returnEmptyErrorsArr", () => {
 		process.env.APPMINAMT = 300;
-		let reimbursementItem = new ReimbursementModel();
+		let reimbursementItem = new ReimbursementItemModel();
 		reimbursementItem.Date = "08/20/2018";
 		reimbursementItem.OrNumber = "11111222223333";
 		reimbursementItem.NameEstablishment = "Jollibee";

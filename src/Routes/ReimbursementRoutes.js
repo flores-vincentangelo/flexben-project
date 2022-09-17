@@ -1,5 +1,5 @@
 const responses = require("../Helpers/responsesHelper");
-const ReimbursementModel = require("../Models/ReimbursementModel");
+const ReimbursementItemModel = require("../Models/ReimbursementItemModel");
 const DataValidationHelper = require("../Helpers/DataValidationHelper");
 const jwtHelper = require("../Helpers/jwtHelper");
 const { AUDIENCE_OPTIONS } = require("../env/constants");
@@ -7,6 +7,7 @@ const { AUDIENCE_OPTIONS } = require("../env/constants");
 const DbFlexCycleCutoff = require("../DataAccess/Database/DbFlexCycleCutoff");
 const DbEmployees = require("../DataAccess/Database/DbEmployees");
 const DbReimbursementTransaction = require("../DataAccess/Database/DbReimbursementTransaction");
+const DbReimbursementItem = require("../DataAccess/Database/DbReimbursementItem");
 
 let ReimbursementRoutes = { file, test, createTransaction };
 module.exports = ReimbursementRoutes;
@@ -17,7 +18,7 @@ async function file(req, res, next) {
 			.getAudienceFromToken(req.cookies.token)
 			.includes(AUDIENCE_OPTIONS.FILE_REIMBURSEMENT)
 	) {
-		let reimbursementItem = new ReimbursementModel();
+		let reimbursementItem = new ReimbursementItemModel();
 		reimbursementItem.Date = req.body.date;
 		reimbursementItem.OrNumber = req.body.orNumber;
 		reimbursementItem.NameEstablishment = req.body.nameEstablishment;
@@ -45,10 +46,20 @@ async function file(req, res, next) {
 						email
 					);
 				if (hasTransaction) {
-					//file
+					await DbReimbursementItem.file(
+						hasTransaction.FlexReimbursementId,
+						reimbursementItem
+					);
 				} else {
-					// await addReimbursementTransaction(email);
-					//file
+					await addReimbursementTransaction(email);
+					let transaction =
+						await DbReimbursementTransaction.getLatestDraftReimbursementTransactionByEmail(
+							email
+						);
+					await DbReimbursementItem.file(
+						transaction.FlexReimbursementId,
+						reimbursementItem
+					);
 				}
 				let token = await jwtHelper.generateToken(
 					req.cookies.token,
