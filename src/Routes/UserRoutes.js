@@ -75,8 +75,8 @@ async function login(req, res, next) {
 		} else {
 			let token = await jwtHelper.generateToken(null, account.Email);
 			res.cookie("token", token, { httpOnly: true });
-			res.status(201).json({
-				...responses.createdBuilder("OK"),
+			res.status(200).json({
+				...responses.OkResponseBuilder("OK"),
 			});
 		}
 	}
