@@ -1,4 +1,6 @@
 class ReimbursementItemModel {
+	ReimItemId;
+	ReimTransId;
 	Date;
 	OrNumber;
 	NameEstablishment;

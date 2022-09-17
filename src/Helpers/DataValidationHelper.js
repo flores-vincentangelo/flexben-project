@@ -36,6 +36,7 @@ async function validateReimbursementItem(reimbursementItem) {
 		reimbursementItem: {
 			...reimbursementItem,
 			CategoryId: category ? category.CategoryId : null,
+			Date: formatDate(reimbursementItem.Date),
 		},
 		message,
 		errors,
@@ -50,4 +51,12 @@ function dateAfterCurrent(dateStr) {
 
 function amountAboveMinimum(amount) {
 	return amount >= process.env.APPMINAMT;
+}
+
+function formatDate(dateStr) {
+	let dateToFormat = new Date(dateStr);
+
+	return `${dateToFormat.getFullYear()}-${
+		dateToFormat.getMonth() + 1
+	}-${dateToFormat.getDate()}`;
 }

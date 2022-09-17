@@ -50,16 +50,17 @@ async function file(req, res, next) {
 						email
 					);
 				if (hasTransaction) {
-					await DbReimbursementItem.file(
-						hasTransaction.FlexReimbursementId,
-						reimbursementItem
-					);
+					reimbursementItem.ReimTransId =
+						hasTransaction.FlexReimbursementId;
+					await DbReimbursementItem.file(reimbursementItem);
 				} else {
 					await addReimbursementTransaction(email);
 					let transaction =
 						await DbReimbursementTransaction.getLatestDraftReimbursementTransactionByEmail(
 							email
 						);
+					reimbursementItem.ReimTransId =
+						transaction.FlexReimbursementId;
 					await DbReimbursementItem.file(
 						transaction.FlexReimbursementId,
 						reimbursementItem
