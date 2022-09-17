@@ -8,6 +8,7 @@ class ReimbursementItemModel {
 	Amount;
 	CategoryCode;
 	CategoryId;
+	Status;
 }
 
 module.exports = ReimbursementItemModel;
