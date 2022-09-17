@@ -47,9 +47,14 @@ async function file(req, res, next) {
 				if (hasTransaction) {
 					//file
 				} else {
-					await addReimbursementTransaction(email);
+					// await addReimbursementTransaction(email);
 					//file
 				}
+				let token = await jwtHelper.generateToken(
+					req.cookies.token,
+					null
+				);
+				res.cookie("token", token, { httpOnly: true });
 				res.status(200).json({
 					...responses.createdBuilder("Reimbursement Filed"),
 					data: reimbursementItem,
@@ -83,6 +88,7 @@ async function createTransaction(req, res, next) {
 				await DbReimbursementTransaction.getLatestDraftReimbursementTransactionByEmail(
 					email
 				);
+			console.log(email);
 			if (hasTransaction) {
 				res.status(400).json({
 					...responses.badRequestResponseBuilder(
@@ -91,6 +97,11 @@ async function createTransaction(req, res, next) {
 				});
 			} else {
 				await addReimbursementTransaction(email);
+				let token = await jwtHelper.generateToken(
+					req.cookies.token,
+					null
+				);
+				res.cookie("token", token, { httpOnly: true });
 				res.status(201).json({
 					...responses.createdBuilder(
 						"Reimbursement Transaction Added"

@@ -61,6 +61,7 @@ function verifyToken(req, res, next) {
 	} else {
 		jwt.verify(token, process.env.SECRET, function (err) {
 			if (err) {
+				console.error(err);
 				res.clearCookie("token");
 				res.status(401).json({
 					...responses.unathorizedResponseBuilder(

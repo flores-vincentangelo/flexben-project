@@ -29,7 +29,7 @@ async function getLatestDraftReimbursementTransactionByEmail(email) {
 	let singleResultArr = await DbConnection.runQuery(query);
 
 	let reimbTrans;
-	if (singleResultArr === 1) {
+	if (singleResultArr.length === 1) {
 		reimbTrans = new ReimbursementTransactionModel();
 
 		reimbTrans.FlexReimbursementId =
