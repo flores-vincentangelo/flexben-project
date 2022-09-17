@@ -5,6 +5,7 @@ class ReimbursementItemModel {
 	TinEstablishment;
 	Amount;
 	CategoryCode;
+	CategoryId;
 }
 
 module.exports = ReimbursementItemModel;
