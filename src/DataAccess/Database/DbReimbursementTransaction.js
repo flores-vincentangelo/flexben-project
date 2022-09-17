@@ -5,6 +5,7 @@ const ReimbursementTransactionModel = require("../../Models/ReimbursementTransac
 let DbReimbursementTransaction = {
 	add,
 	getLatestDraftByEmail,
+	updateAmountOnTransactionId,
 };
 
 module.exports = DbReimbursementTransaction;
@@ -44,4 +45,12 @@ async function getLatestDraftByEmail(email) {
 		reimbTrans.TransactionNumber = singleResultArr[0].transaction_number;
 	}
 	return reimbTrans;
+}
+
+async function updateAmountOnTransactionId(reimTransId, newAmount) {
+	let sql =
+		"UPDATE flex_reimbursement SET total_reimbursement_amount = ? WHERE flex_reimbursement_id = ?";
+	let inserts = [newAmount, reimTransId];
+	let query = mysql.format(sql, inserts);
+	await DbConnection.runQuery(query);
 }

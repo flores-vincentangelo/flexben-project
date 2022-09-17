@@ -12,21 +12,6 @@ const DbReimbursementItem = require("../DataAccess/Database/DbReimbursementItem"
 let ReimbursementRoutes = { file, test, createTransaction };
 module.exports = ReimbursementRoutes;
 
-// "Employee should be able to add a reimbursement item to an active cut-off with the following details:
-// - Date (mm/dd/yyyy) - add validation rules (you should not be able to add a different year and there should be no date greater than the current date)
-// - OR Number
-// - Name of establishment
-// - TIN of establishment
-// - Amount (minimum 500, this amount should be configurable)
-// - Category (from category catalog)
-
-// Reimbursement item should be added to the reimbursement list
-// Total reimburseable amount should be returned
-
-// The system should be able to detect if the reimbursement amount is greater than the maximum reimburseable amount for the given cut-off.
-
-// *Initial status of the reimbursement and reimbursement items/details should be ""Draft"""
-
 async function file(req, res, next) {
 	if (
 		jwtHelper
@@ -71,7 +56,9 @@ async function file(req, res, next) {
 				reimbursementItem = { ...validationResults.reimbursementItem };
 
 				await DbReimbursementItem.file(reimbursementItem);
-				//recalculate max amount
+				let totalAmount = await calculateTransactionAmount(
+					reimbTrans.FlexReimbursementId
+				);
 				let token = await jwtHelper.generateToken(
 					req.cookies.token,
 					null
@@ -79,7 +66,10 @@ async function file(req, res, next) {
 				res.cookie("token", token, { httpOnly: true });
 				res.status(200).json({
 					...responses.createdBuilder("Reimbursement Filed"),
-					data: reimbursementItem,
+					data: {
+						...reimbursementItem,
+						TransactionTotal: totalAmount,
+					},
 				});
 			}
 		} catch (error) {
@@ -161,4 +151,23 @@ async function validateReimbItem(reimbursementItem, reimbTrans) {
 	}
 
 	return validationResults;
+}
+
+async function calculateTransactionAmount(reimbTransId) {
+	let reimbItemsArr = await DbReimbursementItem.getItemsByReimbTransId(
+		reimbTransId
+	);
+
+	let totalAmount = 0;
+
+	reimbItemsArr.forEach(element => {
+		totalAmount += element.Amount;
+	});
+
+	DbReimbursementTransaction.updateAmountOnTransactionId(
+		reimbTransId,
+		totalAmount
+	);
+
+	return totalAmount;
 }

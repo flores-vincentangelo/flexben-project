@@ -2,7 +2,7 @@ const DbConnection = require("./DbConnection");
 const mysql = require("mysql");
 const ReimbursementItemModel = require("../../Models/ReimbursementItemModel");
 
-let DbReimbursementItem = { file, getItemsByEmail };
+let DbReimbursementItem = { file, getItemsByReimbTransId };
 module.exports = DbReimbursementItem;
 
 async function file(reimbursementItem) {
@@ -23,32 +23,28 @@ async function file(reimbursementItem) {
 	await DbConnection.runQuery(query);
 }
 
-async function getItemsByEmail(email) {
-	let sql = `SELECT flex_reimbursement_details.* FROM flex_reimbursement_details
-    LEFT JOIN flex_reimbursement
-    ON flex_reimbursement_details.flex_reimbursement_id = flex_reimbursement.flex_reimbursement_id
-    LEFT JOIN employees
-    ON flex_reimbursement.employee_id = employees.employee_id
-    WHERE employees.email = ?;`;
+async function getItemsByReimbTransId(reimbTransId) {
+	let sql = `SELECT * FROM flex_reimbursement_details
+    WHERE flex_reimbursement_id = ?;`;
 
-	let inserts = [email];
+	let inserts = [reimbTransId];
 	let query = mysql.format(sql, inserts);
 	let resultsArr = await DbConnection.runQuery(query);
 
-	let reimItemsArr = [];
+	let reimbItemsArr = [];
 	resultsArr.forEach(element => {
-		let reimItem = new ReimbursementItemModel();
-		reimItem.ReimItemId = element.flex_reimbursement_detail_id;
-		reimItem.ReimTransId = element.flex_reimbursement_id;
-		reimItem.OrNumber = element.or_number;
-		reimItem.NameEstablishment = element.name_of_establishment;
-		reimItem.TinEstablishment = element.tin_of_establishment;
-		reimItem.Amount = element.amount;
-		reimItem.CategoryId = element.category_id;
-		reimItem.Status = element.status;
-		reimItem.Date = element.date_added;
-		reimItemsArr.push(reimItem);
+		let reimbItem = new ReimbursementItemModel();
+		reimbItem.ReimItemId = element.flex_reimbursement_detail_id;
+		reimbItem.ReimTransId = element.flex_reimbursement_id;
+		reimbItem.OrNumber = element.or_number;
+		reimbItem.NameEstablishment = element.name_of_establishment;
+		reimbItem.TinEstablishment = element.tin_of_establishment;
+		reimbItem.Amount = element.amount;
+		reimbItem.CategoryId = element.category_id;
+		reimbItem.Status = element.status;
+		reimbItem.Date = element.date_added;
+		reimbItemsArr.push(reimbItem);
 	});
 
-	return reimItemsArr;
+	return reimbItemsArr;
 }
