@@ -35,6 +35,11 @@ router.get(
 	jwtHelper.verifyToken,
 	ReimbursementRoutes.getLatestDraftReimbItems
 );
+router.delete(
+	"/remove-reimbursement-item",
+	jwtHelper.verifyToken,
+	ReimbursementRoutes.deleteDraftReimbItem
+);
 router.get(
 	"/create-reimbursement-transaction",
 	jwtHelper.verifyToken,

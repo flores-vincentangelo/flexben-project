@@ -14,6 +14,7 @@ let ReimbursementRoutes = {
 	test,
 	createTransaction,
 	getLatestDraftReimbItems,
+	deleteDraftReimbItem,
 };
 module.exports = ReimbursementRoutes;
 
@@ -89,7 +90,7 @@ async function getLatestDraftReimbItems(req, res, next) {
 	if (
 		jwtHelper
 			.getAudienceFromToken(req.cookies.token)
-			.includes(AUDIENCE_OPTIONS.GET_REIMBURSEMENT_ITEM)
+			.includes(AUDIENCE_OPTIONS.GET_ALL_REIMBURSEMENT_ITEMS)
 	) {
 		let email = jwtHelper.getEmployeeEmailFromToken(req.cookies.token);
 
@@ -128,7 +129,53 @@ async function getLatestDraftReimbItems(req, res, next) {
 	}
 }
 
-async function deleteDraftReimbItem(req, res, next) {}
+async function deleteDraftReimbItem(req, res, next) {
+	if (
+		jwtHelper
+			.getAudienceFromToken(req.cookies.token)
+			.includes(AUDIENCE_OPTIONS.GET_ALL_REIMBURSEMENT_ITEMS)
+	) {
+		let email = jwtHelper.getEmployeeEmailFromToken(req.cookies.token);
+		//get item
+		// not exists: error 404
+		// exists: check if draft
+		// if not draft: bad request not a draft
+		// if draft : OK then delete
+
+		try {
+			let reimbTrans =
+				await DbReimbursementTransaction.getLatestDraftByEmail(email);
+
+			if (!reimbTrans) {
+				res.status(400).json({
+					...responses.badRequestResponseBuilder(
+						"No draft transaction"
+					),
+				});
+			}
+
+			// get reimb trans items by reimb trans Id
+			let reimbItemsArr =
+				await DbReimbursementItem.getItemsByReimbTransId(
+					reimbTrans.FlexReimbursementId
+				);
+
+			let token = await jwtHelper.generateToken(req.cookies.token, null);
+			res.cookie("token", token, { httpOnly: true });
+			res.status(200).json({
+				...responses.createdBuilder("OK"),
+				data: {
+					length: reimbItemsArr.length,
+					reimbursementItems: reimbItemsArr,
+				},
+			});
+		} catch (error) {
+			next(error);
+		}
+	} else {
+		res.status(403).json(responses.forbiddenResponse);
+	}
+}
 
 async function test(req, res, next) {
 	try {
