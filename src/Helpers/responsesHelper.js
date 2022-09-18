@@ -39,8 +39,7 @@ let forbiddenResponse = {
 	statusText: "Forbidden",
 	message: "Insufficient authorization to access data",
 };
-function notFoundBuilder(category, parameter, value) {
-	let message = `The ${category} with ${parameter}: ${value} could not be found`;
+function notFoundBuilder(message) {
 	return {
 		status: 404,
 		statusText: "Not Found",

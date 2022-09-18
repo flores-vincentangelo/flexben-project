@@ -116,6 +116,8 @@ async function getLatestDraftReimbItems(req, res, next) {
 			res.status(200).json({
 				...responses.createdBuilder("OK"),
 				data: {
+					transactionId: reimbTrans.FlexReimbursementId,
+					totalAmount: reimbTrans.TotalReimbursementAmount,
 					length: reimbItemsArr.length,
 					reimbursementItems: reimbItemsArr,
 				},
@@ -149,21 +151,29 @@ async function deleteDraftReimbItem(req, res, next) {
 				});
 			}
 
-			// get reimb trans items by reimb trans Id
-			let reimbItemsArr =
-				await DbReimbursementItem.getItemsByReimbTransId(
+			let result =
+				await DbReimbursementItem.deleteItemByItemIdAndTransactionId(
+					req.body.itemId,
 					reimbTrans.FlexReimbursementId
 				);
 
-			let token = await jwtHelper.generateToken(req.cookies.token, null);
-			res.cookie("token", token, { httpOnly: true });
-			res.status(200).json({
-				...responses.createdBuilder("OK"),
-				data: {
-					length: reimbItemsArr.length,
-					reimbursementItems: reimbItemsArr,
-				},
-			});
+			if (result.affectedRows === 0) {
+				res.status(404).json({
+					...responses.notFoundBuilder("Item not found"),
+				});
+			} else {
+				await calculateTransactionAmount(
+					reimbTrans.FlexReimbursementId
+				);
+				let token = await jwtHelper.generateToken(
+					req.cookies.token,
+					null
+				);
+				res.cookie("token", token, { httpOnly: true });
+				res.status(200).json({
+					...responses.createdBuilder("OK. Item deleted"),
+				});
+			}
 		} catch (error) {
 			next(error);
 		}

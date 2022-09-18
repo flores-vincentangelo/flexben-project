@@ -5,7 +5,8 @@ const ReimbursementItemModel = require("../../Models/ReimbursementItemModel");
 let DbReimbursementItem = {
 	file,
 	getItemsByReimbTransId,
-	getItemByItemId: getItemByItemIdAndTransactionId,
+	getItemByItemIdAndTransactionId,
+	deleteItemByItemIdAndTransactionId,
 };
 module.exports = DbReimbursementItem;
 
@@ -29,7 +30,8 @@ async function file(reimbursementItem) {
 
 async function getItemsByReimbTransId(reimbTransId) {
 	let sql = `SELECT * FROM flex_reimbursement_details
-    WHERE flex_reimbursement_id = ?;`;
+    WHERE flex_reimbursement_id = ?
+    AND deleted = 'n';`;
 
 	let inserts = [reimbTransId];
 	let query = mysql.format(sql, inserts);
@@ -57,7 +59,8 @@ async function getItemByItemIdAndTransactionId(itemId, transactionId) {
 	let sql = `SELECT * 
         FROM flex_reimbursement_details 
         WHERE flex_reimbursement_detail_id = ?
-        AND flex_reimbursement_id = ?;`;
+        AND flex_reimbursement_id = ?
+        AND deleted = 'n';`;
 	let inserts = [itemId, transactionId];
 	let query = mysql.format(sql, inserts);
 	let singleResultArr = await DbConnection.runQuery(query);
@@ -77,4 +80,16 @@ async function getItemByItemIdAndTransactionId(itemId, transactionId) {
 	}
 
 	return reimbItem;
+}
+
+async function deleteItemByItemIdAndTransactionId(itemId, transactionId) {
+	let sql = `UPDATE flex_reimbursement_details 
+        SET deleted = 'y'
+        WHERE flex_reimbursement_detail_id = ?
+        AND flex_reimbursement_id = ?
+        AND status = 'draft'
+        AND deleted = 'n';`;
+	let inserts = [itemId, transactionId];
+	let query = mysql.format(sql, inserts);
+	return await DbConnection.runQuery(query);
 }
