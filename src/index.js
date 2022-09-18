@@ -9,6 +9,7 @@ const UserRoutes = require("./Routes/UserRoutes");
 const EmployeeRoutes = require("./Routes/EmployeeRoutes");
 const ReimbursementRoutes = require("./Routes/ReimbursementRoutes");
 const FlexPointsRoutes = require("./Routes/FlexPointsRoutes");
+const HrRoutes = require("./Routes/HrRoutes");
 
 let app = express();
 
@@ -59,6 +60,23 @@ router.get(
 	"/calculate-flex-points",
 	jwtHelper.verifyToken,
 	FlexPointsRoutes.calculateFlexPoints
+);
+
+// hr endpoints
+router.get(
+	"/reimbursement-by-cutoff",
+	jwtHelper.verifyToken,
+	HrRoutes.getReimbTransByCutoff
+);
+router.get(
+	"/reimbursement-details",
+	jwtHelper.verifyToken,
+	HrRoutes.getReimbTransItems
+);
+router.get(
+	"/search-reimbursement",
+	jwtHelper.verifyToken,
+	HrRoutes.searchReimbTransaction
 );
 
 // configure tables
