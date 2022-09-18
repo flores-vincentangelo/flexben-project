@@ -8,6 +8,7 @@ const ConfigRoutes = require("./Routes/ConfigRoutes");
 const UserRoutes = require("./Routes/UserRoutes");
 const EmployeeRoutes = require("./Routes/EmployeeRoutes");
 const ReimbursementRoutes = require("./Routes/ReimbursementRoutes");
+const FlexPointsRoutes = require("./Routes/FlexPointsRoutes");
 
 let app = express();
 
@@ -54,7 +55,11 @@ router.get(
 );
 
 // flexpoints
-router.post("/calculate-flex-points");
+router.get(
+	"/calculate-flex-points",
+	jwtHelper.verifyToken,
+	FlexPointsRoutes.calculateFlexPoints
+);
 
 // configure tables
 router.get("/config/tables", ConfigRoutes.tables);
