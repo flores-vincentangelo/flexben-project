@@ -47,10 +47,11 @@ async function file(req, res, next) {
 					);
 			}
 			reimbursementItem.ReimTransId = reimbTrans.FlexReimbursementId;
-			let validationResults = await validateReimbItem(
-				reimbursementItem,
-				reimbTrans
-			);
+			let validationResults =
+				await DataValidationHelper.validateReimbursementItem(
+					reimbursementItem,
+					reimbTrans
+				);
 
 			if (validationResults.errors.length != 0) {
 				res.status(400).json({
@@ -183,7 +184,14 @@ async function deleteDraftReimbItem(req, res, next) {
 	}
 }
 
-async function submitTransaction(req, res, next) {}
+async function submitTransaction(req, res, next) {
+	// "* Employee should be able to submit the reimbursement
+	// * Employee is only allowed to submit a reimbursement less than or equal the cap (defined in the cutoff)
+	// * A transaction number should be created once reimbursement is submitted successfully (format of transaction number - <Company code>-<cut-off id>-<YYYYMMDD>-<reimbursement id>)
+	// * company code, cut-off id are found in DB. Reimbursement ID should be auto-generated
+	// * The status of the reimbursement (and reimbursement items/details) will be changed to ""Submitted""
+	// * Employee should not be able to make changes to reimbursements with ""Submitted"" status"
+}
 
 async function test(req, res, next) {
 	try {
@@ -237,25 +245,6 @@ async function addReimbursementTransaction(email) {
 		employee.EmployeeId,
 		latestFlexCycleCutoff.FlexCutoffId
 	);
-}
-
-async function validateReimbItem(reimbursementItem, reimbTrans) {
-	let flexCycle = await DbFlexCycleCutoff.getByFlexCycleId(
-		reimbTrans.FlexCutoffId
-	);
-	let newTotal =
-		reimbTrans.TotalReimbursementAmount + reimbursementItem.Amount;
-
-	let validationResults =
-		await DataValidationHelper.validateReimbursementItem(reimbursementItem);
-
-	if (newTotal > flexCycle.CutoffCapAmount) {
-		validationResults.message +=
-			"Adding this reimbursement item will exceed the maximum reimbursement amount for your flex cycle. ";
-		validationResults.errors.push("amount");
-	}
-
-	return validationResults;
 }
 
 async function calculateTransactionAmount(reimbTransId) {

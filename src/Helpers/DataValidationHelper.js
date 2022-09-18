@@ -1,17 +1,23 @@
 const DbCategory = require("../DataAccess/Database/DbCategory");
+const DbFlexCycleCutoff = require("../DataAccess/Database/DbFlexCycleCutoff");
 
 let DataValidationHelper = {
 	validateReimbursementItem,
 	dateAfterCurrent,
 	amountAboveMinimum,
+	isCategoryCodeValid,
+	itemAmountExceedsCapFn,
 };
 module.exports = DataValidationHelper;
 
-async function validateReimbursementItem(reimbursementItem) {
+async function validateReimbursementItem(reimbursementItem, reimbTrans) {
 	let isDateIncorrect = dateAfterCurrent(reimbursementItem.Date);
 	let isAmountCorrect = amountAboveMinimum(reimbursementItem.Amount);
-	let category = await DbCategory.getCategoryByCode(
-		reimbursementItem.CategoryCode
+	let category = await isCategoryCodeValid(reimbursementItem.CategoryCode);
+	let itemAmountExceedsCap = await itemAmountExceedsCapFn(
+		reimbursementItem.Amount,
+		reimbTrans.TotalReimbursementAmount,
+		reimbTrans.FlexCutoffId
 	);
 
 	let message = "";
@@ -30,6 +36,12 @@ async function validateReimbursementItem(reimbursementItem) {
 	if (!category) {
 		message += "Invalid category code. ";
 		errors.push("category");
+	}
+
+	if (itemAmountExceedsCap) {
+		message +=
+			"Adding this reimbursement item will exceed the maximum reimbursement amount for your flex cycle. ";
+		errors.push("amount");
 	}
 
 	return {
@@ -51,6 +63,22 @@ function dateAfterCurrent(dateStr) {
 
 function amountAboveMinimum(amount) {
 	return amount >= process.env.APPMINAMT;
+}
+
+async function isCategoryCodeValid(categoryCode) {
+	let category = await DbCategory.getCategoryByCode(categoryCode);
+
+	return category ? category : false;
+}
+
+async function itemAmountExceedsCapFn(
+	amount,
+	totalReimbursementAmount,
+	flexCutoffId
+) {
+	let flexCycle = await DbFlexCycleCutoff.getByFlexCycleId(flexCutoffId);
+	let newTotal = totalReimbursementAmount + amount;
+	return newTotal > flexCycle.CutoffCapAmount;
 }
 
 function formatDate(dateStr) {
