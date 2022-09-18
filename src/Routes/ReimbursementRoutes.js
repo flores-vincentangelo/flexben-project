@@ -9,14 +9,19 @@ const DbEmployees = require("../DataAccess/Database/DbEmployees");
 const DbReimbursementTransaction = require("../DataAccess/Database/DbReimbursementTransaction");
 const DbReimbursementItem = require("../DataAccess/Database/DbReimbursementItem");
 
-let ReimbursementRoutes = { file, test, createTransaction };
+let ReimbursementRoutes = {
+	file,
+	test,
+	createTransaction,
+	getLatestDraftReimbItems,
+};
 module.exports = ReimbursementRoutes;
 
 async function file(req, res, next) {
 	if (
 		jwtHelper
 			.getAudienceFromToken(req.cookies.token)
-			.includes(AUDIENCE_OPTIONS.FILE_REIMBURSEMENT)
+			.includes(AUDIENCE_OPTIONS.FILE_REIMBURSEMENT_ITEM)
 	) {
 		let reimbursementItem = new ReimbursementItemModel();
 		reimbursementItem.Date = req.body.date;
@@ -72,6 +77,49 @@ async function file(req, res, next) {
 					},
 				});
 			}
+		} catch (error) {
+			next(error);
+		}
+	} else {
+		res.status(403).json(responses.forbiddenResponse);
+	}
+}
+
+async function getLatestDraftReimbItems(req, res, next) {
+	if (
+		jwtHelper
+			.getAudienceFromToken(req.cookies.token)
+			.includes(AUDIENCE_OPTIONS.GET_REIMBURSEMENT_ITEM)
+	) {
+		let email = jwtHelper.getEmployeeEmailFromToken(req.cookies.token);
+
+		try {
+			let reimbTrans =
+				await DbReimbursementTransaction.getLatestDraftByEmail(email);
+
+			if (!reimbTrans) {
+				res.status(400).json({
+					...responses.badRequestResponseBuilder(
+						"No draft transaction"
+					),
+				});
+			}
+
+			// get reimb trans items by reimb trans Id
+			let reimbItemsArr =
+				await DbReimbursementItem.getItemsByReimbTransId(
+					reimbTrans.FlexReimbursementId
+				);
+
+			let token = await jwtHelper.generateToken(req.cookies.token, null);
+			res.cookie("token", token, { httpOnly: true });
+			res.status(200).json({
+				...responses.createdBuilder("OK"),
+				data: {
+					length: reimbItemsArr.length,
+					reimbursementItems: reimbItemsArr,
+				},
+			});
 		} catch (error) {
 			next(error);
 		}

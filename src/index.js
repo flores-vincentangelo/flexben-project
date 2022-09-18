@@ -25,11 +25,15 @@ router.get(
 	EmployeeRoutes.getDetails
 );
 
-router.get("/test", jwtHelper.verifyToken, ReimbursementRoutes.test);
 router.post(
 	"/file-reimbursement",
 	jwtHelper.verifyToken,
 	ReimbursementRoutes.file
+);
+router.get(
+	"/get-reimbursement-items",
+	jwtHelper.verifyToken,
+	ReimbursementRoutes.getLatestDraftReimbItems
 );
 router.get(
 	"/create-reimbursement-transaction",
