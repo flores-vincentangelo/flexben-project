@@ -106,7 +106,6 @@ async function getLatestDraftReimbItems(req, res, next) {
 				});
 			}
 
-			// get reimb trans items by reimb trans Id
 			let reimbItemsArr =
 				await DbReimbursementItem.getItemsByReimbTransId(
 					reimbTrans.FlexReimbursementId
@@ -136,10 +135,6 @@ async function deleteDraftReimbItem(req, res, next) {
 			.includes(AUDIENCE_OPTIONS.GET_ALL_REIMBURSEMENT_ITEMS)
 	) {
 		let email = jwtHelper.getEmployeeEmailFromToken(req.cookies.token);
-		//get item
-		// not exists: error 404
-		// exists: check if draft
-		// if not draft: bad request not a draft
 		// if draft : OK then delete
 
 		try {

@@ -2,7 +2,11 @@ const DbConnection = require("./DbConnection");
 const mysql = require("mysql");
 const ReimbursementItemModel = require("../../Models/ReimbursementItemModel");
 
-let DbReimbursementItem = { file, getItemsByReimbTransId };
+let DbReimbursementItem = {
+	file,
+	getItemsByReimbTransId,
+	getItemByItemId: getItemByItemIdAndTransactionId,
+};
 module.exports = DbReimbursementItem;
 
 async function file(reimbursementItem) {
@@ -47,4 +51,30 @@ async function getItemsByReimbTransId(reimbTransId) {
 	});
 
 	return reimbItemsArr;
+}
+
+async function getItemByItemIdAndTransactionId(itemId, transactionId) {
+	let sql = `SELECT * 
+        FROM flex_reimbursement_details 
+        WHERE flex_reimbursement_detail_id = ?
+        AND flex_reimbursement_id = ?;`;
+	let inserts = [itemId, transactionId];
+	let query = mysql.format(sql, inserts);
+	let singleResultArr = await DbConnection.runQuery(query);
+
+	let reimbItem;
+	if (singleResultArr.length === 1) {
+		reimbItem = new ReimbursementItemModel();
+		reimbItem.ReimItemId = singleResultArr[0].flex_reimbursement_detail_id;
+		reimbItem.ReimTransId = singleResultArr[0].flex_reimbursement_id;
+		reimbItem.OrNumber = singleResultArr[0].or_number;
+		reimbItem.NameEstablishment = singleResultArr[0].name_of_establishment;
+		reimbItem.TinEstablishment = singleResultArr[0].tin_of_establishment;
+		reimbItem.Amount = singleResultArr[0].amount;
+		reimbItem.CategoryId = singleResultArr[0].category_id;
+		reimbItem.Status = singleResultArr[0].status;
+		reimbItem.Date = singleResultArr[0].date_added;
+	}
+
+	return reimbItem;
 }
