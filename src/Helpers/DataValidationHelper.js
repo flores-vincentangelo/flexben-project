@@ -3,10 +3,12 @@ const DbFlexCycleCutoff = require("../DataAccess/Database/DbFlexCycleCutoff");
 
 let DataValidationHelper = {
 	validateReimbursementItem,
+	validateTransaction,
 	dateAfterCurrent,
 	amountAboveMinimum,
 	isCategoryCodeValid,
 	itemAmountExceedsCapFn,
+	transactionAmountExceedsCapFn,
 };
 module.exports = DataValidationHelper;
 
@@ -55,6 +57,26 @@ async function validateReimbursementItem(reimbursementItem, reimbTrans) {
 	};
 }
 
+async function validateTransaction(reimbTrans) {
+	let transactionAmountExceedsCap = await transactionAmountExceedsCapFn(
+		reimbTrans.TotalReimbursementAmount,
+		reimbTrans.FlexCutoffId
+	);
+
+	let message = "";
+	let errors = [];
+
+	if (transactionAmountExceedsCap) {
+		message += "Total transaction amount exceeds the cycle cutoff cap. ";
+		errors.push("totalAmount");
+	}
+
+	return {
+		message,
+		errors,
+	};
+}
+
 function dateAfterCurrent(dateStr) {
 	let testDate = new Date(dateStr);
 	let dateNow = new Date();
@@ -79,6 +101,14 @@ async function itemAmountExceedsCapFn(
 	let flexCycle = await DbFlexCycleCutoff.getByFlexCycleId(flexCutoffId);
 	let newTotal = totalReimbursementAmount + amount;
 	return newTotal > flexCycle.CutoffCapAmount;
+}
+
+async function transactionAmountExceedsCapFn(
+	totalReimbursementAmount,
+	flexCutoffId
+) {
+	let flexCycle = await DbFlexCycleCutoff.getByFlexCycleId(flexCutoffId);
+	return totalReimbursementAmount > flexCycle.CutoffCapAmount;
 }
 
 function formatDate(dateStr) {
