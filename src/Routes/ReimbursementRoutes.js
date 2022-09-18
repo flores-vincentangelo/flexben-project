@@ -15,6 +15,7 @@ let ReimbursementRoutes = {
 	createTransaction,
 	getLatestDraftReimbItems,
 	deleteDraftReimbItem,
+	submitTransaction,
 };
 module.exports = ReimbursementRoutes;
 
