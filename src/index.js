@@ -25,6 +25,7 @@ router.get(
 	EmployeeRoutes.getDetails
 );
 
+// reimbursement endpoints
 router.post(
 	"/file-reimbursement",
 	jwtHelper.verifyToken,
@@ -52,7 +53,10 @@ router.get(
 	ReimbursementRoutes.createTransaction
 );
 
-//configure tables
+// flexpoints
+router.post("/calculate-flex-points");
+
+// configure tables
 router.get("/config/tables", ConfigRoutes.tables);
 
 app.use("/api/", router);
