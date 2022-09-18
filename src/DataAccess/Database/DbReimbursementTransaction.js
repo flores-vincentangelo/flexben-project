@@ -6,6 +6,7 @@ let DbReimbursementTransaction = {
 	add,
 	getLatestDraftByEmail,
 	updateAmountOnTransactionId,
+	updateTransactionNumberAndStatusOnTransactionId,
 };
 
 module.exports = DbReimbursementTransaction;
@@ -53,4 +54,16 @@ async function updateAmountOnTransactionId(reimTransId, newAmount) {
 	let inserts = [newAmount, reimTransId];
 	let query = mysql.format(sql, inserts);
 	await DbConnection.runQuery(query);
+}
+
+async function updateTransactionNumberAndStatusOnTransactionId(reimbTrans) {
+	let sql = `UPDATE flex_reimbursement
+	SET status = 'Submitted', date_submitted = CURRENT_DATE,  transaction_number = ?
+    WHERE flex_reimbursement_id = ?;`;
+	let inserts = [
+		reimbTrans.TransactionNumber,
+		reimbTrans.FlexReimbursementId,
+	];
+	let query = mysql.format(sql, inserts);
+	return await DbConnection.runQuery(query);
 }

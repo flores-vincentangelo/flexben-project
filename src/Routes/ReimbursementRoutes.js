@@ -8,6 +8,7 @@ const DbFlexCycleCutoff = require("../DataAccess/Database/DbFlexCycleCutoff");
 const DbEmployees = require("../DataAccess/Database/DbEmployees");
 const DbReimbursementTransaction = require("../DataAccess/Database/DbReimbursementTransaction");
 const DbReimbursementItem = require("../DataAccess/Database/DbReimbursementItem");
+const DbCompany = require("../DataAccess/Database/DbCompany");
 
 let ReimbursementRoutes = {
 	file,
@@ -106,24 +107,27 @@ async function getLatestDraftReimbItems(req, res, next) {
 						"No draft transaction"
 					),
 				});
-			}
+			} else {
+				let reimbItemsArr =
+					await DbReimbursementItem.getItemsByReimbTransId(
+						reimbTrans.FlexReimbursementId
+					);
 
-			let reimbItemsArr =
-				await DbReimbursementItem.getItemsByReimbTransId(
-					reimbTrans.FlexReimbursementId
+				let token = await jwtHelper.generateToken(
+					req.cookies.token,
+					null
 				);
-
-			let token = await jwtHelper.generateToken(req.cookies.token, null);
-			res.cookie("token", token, { httpOnly: true });
-			res.status(200).json({
-				...responses.createdBuilder("OK"),
-				data: {
-					transactionId: reimbTrans.FlexReimbursementId,
-					totalAmount: reimbTrans.TotalReimbursementAmount,
-					length: reimbItemsArr.length,
-					reimbursementItems: reimbItemsArr,
-				},
-			});
+				res.cookie("token", token, { httpOnly: true });
+				res.status(200).json({
+					...responses.createdBuilder("OK"),
+					data: {
+						transactionId: reimbTrans.FlexReimbursementId,
+						totalAmount: reimbTrans.TotalReimbursementAmount,
+						length: reimbItemsArr.length,
+						reimbursementItems: reimbItemsArr,
+					},
+				});
+			}
 		} catch (error) {
 			next(error);
 		}
@@ -150,30 +154,30 @@ async function deleteDraftReimbItem(req, res, next) {
 						"No draft transaction"
 					),
 				});
-			}
-
-			let result =
-				await DbReimbursementItem.deleteItemByItemIdAndTransactionId(
-					req.body.itemId,
-					reimbTrans.FlexReimbursementId
-				);
-
-			if (result.affectedRows === 0) {
-				res.status(404).json({
-					...responses.notFoundBuilder("Item not found"),
-				});
 			} else {
-				await calculateTransactionAmount(
-					reimbTrans.FlexReimbursementId
-				);
-				let token = await jwtHelper.generateToken(
-					req.cookies.token,
-					null
-				);
-				res.cookie("token", token, { httpOnly: true });
-				res.status(200).json({
-					...responses.createdBuilder("OK. Item deleted"),
-				});
+				let result =
+					await DbReimbursementItem.deleteItemByItemIdAndTransactionId(
+						req.body.itemId,
+						reimbTrans.FlexReimbursementId
+					);
+
+				if (result.affectedRows === 0) {
+					res.status(404).json({
+						...responses.notFoundBuilder("Item not found"),
+					});
+				} else {
+					await calculateTransactionAmount(
+						reimbTrans.FlexReimbursementId
+					);
+					let token = await jwtHelper.generateToken(
+						req.cookies.token,
+						null
+					);
+					res.cookie("token", token, { httpOnly: true });
+					res.status(200).json({
+						...responses.createdBuilder("OK. Item deleted"),
+					});
+				}
 			}
 		} catch (error) {
 			next(error);
@@ -224,8 +228,15 @@ async function submitTransaction(req, res, next) {
 				});
 			} else {
 				//create transaction number
-				await generateTransactionNumber(email, reimbTrans);
+				let transactionNumber = await generateTransactionNumber(
+					email,
+					reimbTrans
+				);
+				reimbTrans.TransactionNumber = transactionNumber;
 				//update transaction with transaction number and update to submitted
+				DbReimbursementTransaction.updateTransactionNumberAndStatusOnTransactionId(
+					reimbTrans
+				);
 				let token = await jwtHelper.generateToken(
 					req.cookies.token,
 					null
@@ -233,6 +244,7 @@ async function submitTransaction(req, res, next) {
 				res.cookie("token", token, { httpOnly: true });
 				res.status(200).json({
 					...responses.createdBuilder("Transaction submitted"),
+					data: reimbTrans,
 				});
 			}
 		} catch (error) {
@@ -291,7 +303,7 @@ async function createTransaction(req, res, next) {
 async function addReimbursementTransaction(email) {
 	let employee = await DbEmployees.getEmployeeDetailsByEmail(email);
 	let latestFlexCycleCutoff = await DbFlexCycleCutoff.getLatestFlexCycle();
-	await DbReimbursementTransaction.addReimbursementTransaction(
+	await DbReimbursementTransaction.add(
 		employee.EmployeeId,
 		latestFlexCycleCutoff.FlexCutoffId
 	);
@@ -318,8 +330,17 @@ async function calculateTransactionAmount(reimbTransId) {
 
 async function generateTransactionNumber(email, reimbTrans) {
 	// <Company code>-<cut-off id>-<YYYYMMDD>-<reimbursement id>
+	// PWINNOV-2-20180828-1
 	// query company code using email
+	let company = await DbCompany.getCompanyByEmployeeEmail(email);
 	// cut off id in reimbTrans.FlexCutoffId
 	// YYYYMMDDOfSubmission
+	let dateNow = new Date();
+	let formattedDate = `${dateNow.getFullYear()}${(dateNow.getMonth() + 1)
+		.toString()
+		.padStart(2, "0")}${dateNow.getDate()}`;
 	// reimbursement id = reimbTrans.FlexReimbursementId
+
+	let transactionNumber = `${company.Code}-${reimbTrans.FlexCutoffId}-${formattedDate}-${reimbTrans.FlexReimbursementId}`;
+	return transactionNumber;
 }
