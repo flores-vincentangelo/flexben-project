@@ -128,6 +128,8 @@ async function getLatestDraftReimbItems(req, res, next) {
 	}
 }
 
+async function deleteDraftReimbItem(req, res, next) {}
+
 async function test(req, res, next) {
 	try {
 		res.redirect("/api/create-reimbursement-transaction");
