@@ -87,7 +87,7 @@ async function getReimbTransItems(req, res, next) {
 				res.cookie("token", token, { httpOnly: true });
 				res.status(200).json({
 					...responses.OkResponseBuilder("OK"),
-					data: { formattedTransaction, items: formatteditemsArr },
+					data: { ...formattedTransaction, Items: formatteditemsArr },
 				});
 			}
 		} catch (error) {
@@ -99,56 +99,64 @@ async function getReimbTransItems(req, res, next) {
 }
 
 async function searchReimbTransaction(req, res, next) {
-	//     "Search filters should be:
-	// * Employee ID
-	// * Employee Last Name
-	// * Employee First Name
-	// Search results should show the reimbursement and reimbursement details, if found."
-
 	if (
 		jwtHelper
 			.getAudienceFromToken(req.cookies.token)
 			.includes(AUDIENCE_OPTIONS.SEARCH_REIMB_TRANSACTION)
 	) {
 		try {
-			res.status(200).json({
-				...responses.OkResponseBuilder("OK"),
-				data: { ...req.query },
-			});
-			// let reimbTransId = parseInt(req.query.id);
+			let empNumber = req.query.employeeNumber
+				? req.query.employeeNumber
+				: "";
+			let empLastname = req.query.employeeLastname
+				? req.query.employeeLastname
+				: "";
+			let empFirstname = req.query.employeeFirstname
+				? req.query.employeeFirstname
+				: "";
+			let status = req.query.status ? req.query.status : "";
+			let transactionArr =
+				await DbReimbursementTransaction.searchTransactionByEmployeeIdName(
+					empNumber,
+					empLastname,
+					empFirstname,
+					status
+				);
+			if (transactionArr.length === 0) {
+				res.status(404).json({
+					...responses.notFoundBuilder("Transaction not found"),
+				});
+			} else {
+				let formattedTransactionAndItemsArr = [];
+				transactionArr.forEach(async reimbTrans => {
+					let reimbItemsArr =
+						await DbReimbursementItem.getItemsByReimbTransId(
+							reimbTrans.FlexReimbursementId
+						);
+					let formatteditemsArr = [];
 
-			// let transaction =
-			// 	await DbReimbursementTransaction.getByTransactionId(
-			// 		reimbTransId
-			// 	);
-			// if (!transaction) {
-			// 	res.status(404).json({
-			// 		...responses.notFoundBuilder("Transaction not found"),
-			// 	});
-			// } else {
-			// 	let formattedTransaction = formatTransaction(transaction);
+					reimbItemsArr.forEach(reimbItem => {
+						let formattedItem = formatItem(reimbItem);
+						formatteditemsArr.push(formattedItem);
+					});
+					let formattedTransaction = formatTransaction(reimbTrans);
+					formattedTransactionAndItemsArr.push({
+						...formattedTransaction,
+						Items: formatteditemsArr,
+					});
+				});
 
-			// 	let reimbItemsArr =
-			// 		await DbReimbursementItem.getItemsByReimbTransId(
-			// 			reimbTransId
-			// 		);
-			// 	let formatteditemsArr = [];
-
-			// 	reimbItemsArr.forEach(reimbItem => {
-			// 		let formattedItem = formatItem(reimbItem);
-			// 		formatteditemsArr.push(formattedItem);
-			// 	});
-
-			// 	let token = await jwtHelper.generateToken(
-			// 		req.cookies.token,
-			// 		null
-			// 	);
-			// 	res.cookie("token", token, { httpOnly: true });
-			// 	res.status(200).json({
-			// 		...responses.OkResponseBuilder("OK"),
-			// 		data: { formattedTransaction, items: formatteditemsArr },
-			// 	});
-			// }
+				let token = await jwtHelper.generateToken(
+					req.cookies.token,
+					null
+				);
+				res.cookie("token", token, { httpOnly: true });
+				res.status(200).json({
+					...responses.OkResponseBuilder("OK"),
+					// data: { formattedTransaction, items: formatteditemsArr },
+					data: formattedTransactionAndItemsArr,
+				});
+			}
 		} catch (error) {
 			next(error);
 		}

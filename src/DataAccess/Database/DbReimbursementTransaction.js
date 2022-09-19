@@ -10,6 +10,7 @@ let DbReimbursementTransaction = {
 	updateTransactionNumberAndStatusOnTransactionId,
 	getByCutoffId,
 	getByTransactionId,
+	searchTransactionByEmployeeIdName,
 };
 
 module.exports = DbReimbursementTransaction;
@@ -138,4 +139,52 @@ async function getByTransactionId(reimbTransId) {
 	}
 
 	return transactionAndEmployee;
+}
+
+async function searchTransactionByEmployeeIdName(
+	empNumber,
+	empLastname,
+	empFirstname,
+	status
+) {
+	let sql = `SELECT flex_reimbursement .*, employees.firstname, employees.lastName, employees.employee_number 
+    FROM flex_reimbursement
+    LEFT JOIN employees
+    ON flex_reimbursement.employee_id = employees.employee_id
+    WHERE employees.employee_number LIKE ?
+    AND employees.firstname LIKE ?
+    AND employees.lastname LIKE ?
+    AND flex_reimbursement.status LIKE ?;`;
+	let inserts = [
+		"%" + empNumber + "%",
+		"%" + empFirstname + "%",
+		"%" + empLastname + "%",
+		"%" + status + "%",
+	];
+	let query = mysql.format(sql, inserts);
+	let resultsArr = await DbConnection.runQuery(query);
+
+	let transactionAndEmployeeArr = [];
+	if (resultsArr.length != 0) {
+		resultsArr.forEach(element => {
+			let reimbTrans = new ReimbursementTransactionModel();
+			let employee = new EmployeeModel();
+
+			reimbTrans.FlexReimbursementId = element.flex_reimbursement_id;
+			reimbTrans.EmployeeId = element.employee_id;
+			reimbTrans.FlexCutoffId = element.flex_cut_off_id;
+			reimbTrans.TotalReimbursementAmount =
+				element.total_reimbursement_amount;
+			reimbTrans.DateSubmitted = element.date_submitted;
+			reimbTrans.Status = element.status;
+			reimbTrans.DateUpdated = element.date_updated;
+			reimbTrans.TransactionNumber = element.transaction_number;
+			employee.EmployeeNumber = element.employee_number;
+			employee.FirstName = element.firstname;
+			employee.LastName = element.lastName;
+			let customObj = { ...reimbTrans, ...employee };
+			transactionAndEmployeeArr.push(customObj);
+		});
+	}
+	return transactionAndEmployeeArr;
 }
