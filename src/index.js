@@ -49,7 +49,7 @@ router.get(
 	ReimbursementRoutes.submitTransaction
 );
 
-router.get(
+router.post(
 	"/print-transaction",
 	jwtHelper.verifyToken,
 	ReimbursementRoutes.printTransaction

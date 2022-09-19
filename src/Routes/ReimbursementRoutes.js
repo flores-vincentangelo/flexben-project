@@ -258,14 +258,18 @@ async function printTransaction(req, res, next) {
 			.includes(AUDIENCE_OPTIONS.PRINT_TRANSACTION)
 	) {
 		let email = jwtHelper.getEmployeeEmailFromToken(req.cookies.token);
+		let reimbTransNumber = req.body.transactionNumber;
+
 		try {
 			let reimbTrans =
-				await DbReimbursementTransaction.getLatestDraftByEmail(email);
+				await DbReimbursementTransaction.getByTransactionNumber(
+					reimbTransNumber
+				);
 
 			if (!reimbTrans) {
 				res.status(400).json({
 					...responses.badRequestResponseBuilder(
-						"No draft transaction"
+						"Transaction not found"
 					),
 				});
 			} else {
