@@ -29,7 +29,7 @@ async function calculateFlexPoints(req, res, next) {
 
 			res.status(200).json({
 				...responses.OkResponseBuilder("Flex points calculated"),
-				data: flexPoints,
+				data: parseInt(flexPoints.toFixed(0)),
 			});
 		} catch (error) {
 			next(error);

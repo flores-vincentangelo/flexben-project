@@ -236,6 +236,7 @@ async function submitTransaction(req, res, next) {
 						req.cookies.token,
 						null
 					);
+					reimbTrans.DateSubmitted(formatDate(new Date()));
 					res.cookie("token", token, { httpOnly: true });
 					res.status(200).json({
 						...responses.createdBuilder("Transaction submitted"),
@@ -266,16 +267,10 @@ async function printTransaction(req, res, next) {
 					reimbTransNumber
 				);
 
-			if (!transaction) {
+			if (!transaction || transaction.Email != email) {
 				res.status(404).json({
 					...responses.notFoundBuilder("Transaction not found"),
 				});
-			} else if (transaction.Email != email) {
-				res.status(400).json(
-					...responses.badRequestResponseBuilder(
-						"You cannot access this transaction"
-					)
-				);
 			} else {
 				let reimbItemsArr =
 					await DbReimbursementItem.getItemsByReimbTransId(
@@ -306,51 +301,6 @@ async function printTransaction(req, res, next) {
 		res.status(403).json(responses.forbiddenResponse);
 	}
 }
-
-// async function test(req, res, next) {
-// 	try {
-// 		res.redirect("/api/create-reimbursement-transaction");
-// 	} catch (error) {
-// 		next(error);
-// 	}
-// }
-
-// async function createTransaction(req, res, next) {
-// 	if (
-// 		jwtHelper
-// 			.getAudienceFromToken(req.cookies.token)
-// 			.includes(AUDIENCE_OPTIONS.ADD_REIMB_TRANSACTION)
-// 	) {
-// 		try {
-// 			let email = jwtHelper.getEmployeeEmailFromToken(req.cookies.token);
-// 			let hasTransaction =
-// 				await DbReimbursementTransaction.getLatestDraftByEmail(email);
-// 			if (hasTransaction) {
-// 				res.status(400).json({
-// 					...responses.badRequestResponseBuilder(
-// 						"Already have an exisiting transaction"
-// 					),
-// 				});
-// 			} else {
-// 				await addReimbursementTransaction(email);
-// 				let token = await jwtHelper.generateToken(
-// 					req.cookies.token,
-// 					null
-// 				);
-// 				res.cookie("token", token, { httpOnly: true });
-// 				res.status(201).json({
-// 					...responses.createdBuilder(
-// 						"Reimbursement Transaction Added"
-// 					),
-// 				});
-// 			}
-// 		} catch (error) {
-// 			next(error);
-// 		}
-// 	} else {
-// 		res.status(403).json(responses.forbiddenResponse);
-// 	}
-// }
 
 async function addReimbursementTransaction(email) {
 	let employee = await DbEmployees.getEmployeeDetailsByEmail(email);
@@ -383,10 +333,14 @@ async function calculateTransactionAmount(reimbTransId) {
 async function generateTransactionNumber(email, reimbTrans) {
 	let company = await DbCompany.getCompanyByEmployeeEmail(email);
 	let dateNow = new Date();
-	let formattedDate = `${dateNow.getFullYear()}${(dateNow.getMonth() + 1)
-		.toString()
-		.padStart(2, "0")}${dateNow.getDate()}`;
-
+	let formattedDate = formatDate(dateNow);
 	let transactionNumber = `${company.Code}-${reimbTrans.FlexCutoffId}-${formattedDate}-${reimbTrans.FlexReimbursementId}`;
 	return transactionNumber;
+}
+
+function formatDate(dateToFormat) {
+	let date = new Date(dateToFormat);
+	return `${date.getFullYear()}${(date.getMonth() + 1)
+		.toString()
+		.padStart(2, "0")}${date.getDate()}`;
 }
