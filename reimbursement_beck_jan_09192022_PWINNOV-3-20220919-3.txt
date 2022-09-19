@@ -1,0 +1,92 @@
+Employee Name:   Beck, Jan
+Employee Number:	12034
+Date Submitted:		September 19, 2022
+Transaction Number: PWINNOV-3-20220919-3
+Amount:	Php 4300.00
+Status:	Submitted
+
+=== DETAILS ===
+CATEGORY: MEDICAL Claim Category
+N/A
+
+CATEGORY: APPLIANCE Claim Category
+N/A
+
+CATEGORY: Beauty & Wellness Claim Category
+N/A
+
+CATEGORY: FOOD, RESTAURANT & GROCERIES Claim Category
+N/A
+
+CATEGORY: FASHION Claim Category
+N/A
+
+CATEGORY: ENTERTAINMENT Claim Category
+N/A
+
+CATEGORY: GADGETS Claim Category
+N/A
+
+CATEGORY: TRANSPORTATION Claim Category
+N/A
+
+CATEGORY: TRAVEL & LEISURE Claim Category
+N/A
+
+CATEGORY: CONNECTIVITY Claim Category
+N/A
+
+CATEGORY: Applications and Software Claim Category
+N/A
+
+CATEGORY: HOME IMROVEMENTS & FURNITURES Claim Category
+N/A
+
+CATEGORY: LIFE INSURANCE Claim Category
+N/A
+
+CATEGORY: Books and Subscriptions Claim Category
+N/A
+
+CATEGORY: OFFICE SUPPLIES Claim Category
+N/A
+
+CATEGORY: TRAINING & TUITION Claim Category
+N/A
+
+CATEGORY: Corporate Social Responsibility Claim Category
+N/A
+
+CATEGORY: LEAVE BUY BACK
+Item # 1
+Date: August 20, 2021
+OR Number: 11111222223333
+Name of Establishment: Mcdo
+TIN of Establishment: Bagong transaction pare
+Amount: Php 900.00
+Status: Submitted
+
+Item # 2
+Date: August 20, 2021
+OR Number: 11111222223333
+Name of Establishment: Mcdo
+TIN of Establishment: Bagong transaction pare 2
+Amount: Php 900.00
+Status: Submitted
+
+Item # 3
+Date: August 20, 2021
+OR Number: 11111222223333
+Name of Establishment: Mcdo
+TIN of Establishment: Bagong transaction pare 2
+Amount: Php 2000.00
+Status: Submitted
+
+Item # 4
+Date: August 20, 2021
+OR Number: 11111222223333
+Name of Establishment: Mcdo
+TIN of Establishment: Bagong transaction pare 2
+Amount: Php 500.00
+Status: Submitted
+

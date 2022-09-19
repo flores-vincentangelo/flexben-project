@@ -295,7 +295,7 @@ async function printTransaction(req, res, next) {
 				);
 				res.cookie("token", token, { httpOnly: true });
 				res.status(200).json({
-					...responses.createdBuilder("Transaction submitted"),
+					...responses.OkResponseBuilder("Transaction printed"),
 					data: { transaction, items: reimbItemsArr },
 				});
 			}
@@ -307,50 +307,50 @@ async function printTransaction(req, res, next) {
 	}
 }
 
-async function test(req, res, next) {
-	try {
-		res.redirect("/api/create-reimbursement-transaction");
-	} catch (error) {
-		next(error);
-	}
-}
+// async function test(req, res, next) {
+// 	try {
+// 		res.redirect("/api/create-reimbursement-transaction");
+// 	} catch (error) {
+// 		next(error);
+// 	}
+// }
 
-async function createTransaction(req, res, next) {
-	if (
-		jwtHelper
-			.getAudienceFromToken(req.cookies.token)
-			.includes(AUDIENCE_OPTIONS.ADD_REIMB_TRANSACTION)
-	) {
-		try {
-			let email = jwtHelper.getEmployeeEmailFromToken(req.cookies.token);
-			let hasTransaction =
-				await DbReimbursementTransaction.getLatestDraftByEmail(email);
-			if (hasTransaction) {
-				res.status(400).json({
-					...responses.badRequestResponseBuilder(
-						"Already have an exisiting transaction"
-					),
-				});
-			} else {
-				await addReimbursementTransaction(email);
-				let token = await jwtHelper.generateToken(
-					req.cookies.token,
-					null
-				);
-				res.cookie("token", token, { httpOnly: true });
-				res.status(201).json({
-					...responses.createdBuilder(
-						"Reimbursement Transaction Added"
-					),
-				});
-			}
-		} catch (error) {
-			next(error);
-		}
-	} else {
-		res.status(403).json(responses.forbiddenResponse);
-	}
-}
+// async function createTransaction(req, res, next) {
+// 	if (
+// 		jwtHelper
+// 			.getAudienceFromToken(req.cookies.token)
+// 			.includes(AUDIENCE_OPTIONS.ADD_REIMB_TRANSACTION)
+// 	) {
+// 		try {
+// 			let email = jwtHelper.getEmployeeEmailFromToken(req.cookies.token);
+// 			let hasTransaction =
+// 				await DbReimbursementTransaction.getLatestDraftByEmail(email);
+// 			if (hasTransaction) {
+// 				res.status(400).json({
+// 					...responses.badRequestResponseBuilder(
+// 						"Already have an exisiting transaction"
+// 					),
+// 				});
+// 			} else {
+// 				await addReimbursementTransaction(email);
+// 				let token = await jwtHelper.generateToken(
+// 					req.cookies.token,
+// 					null
+// 				);
+// 				res.cookie("token", token, { httpOnly: true });
+// 				res.status(201).json({
+// 					...responses.createdBuilder(
+// 						"Reimbursement Transaction Added"
+// 					),
+// 				});
+// 			}
+// 		} catch (error) {
+// 			next(error);
+// 		}
+// 	} else {
+// 		res.status(403).json(responses.forbiddenResponse);
+// 	}
+// }
 
 async function addReimbursementTransaction(email) {
 	let employee = await DbEmployees.getEmployeeDetailsByEmail(email);
