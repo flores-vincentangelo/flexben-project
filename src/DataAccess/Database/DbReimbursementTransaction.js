@@ -148,8 +148,7 @@ async function getByTransactionId(reimbTransId) {
 async function searchTransactionByEmployeeIdName(
 	empNumber,
 	empLastname,
-	empFirstname,
-	status
+	empFirstname
 ) {
 	let sql = `SELECT flex_reimbursement .*, employees.firstname, employees.lastName, employees.employee_number 
     FROM flex_reimbursement
@@ -158,12 +157,11 @@ async function searchTransactionByEmployeeIdName(
     WHERE employees.employee_number LIKE ?
     AND employees.firstname LIKE ?
     AND employees.lastname LIKE ?
-    AND flex_reimbursement.status LIKE ?;`;
+    AND flex_reimbursement.status = 'submitted';`;
 	let inserts = [
 		"%" + empNumber + "%",
 		"%" + empFirstname + "%",
 		"%" + empLastname + "%",
-		"%" + status + "%",
 	];
 	let query = mysql.format(sql, inserts);
 	let resultsArr = await DbConnection.runQuery(query);
@@ -202,9 +200,10 @@ async function getByTransactionNumber(transactionNumber) {
 	let query = mysql.format(sql, inserts);
 	let singleResultArr = await DbConnection.runQuery(query);
 
-	let reimbTrans;
+	let transactionAndEmployee;
 	if (singleResultArr.length === 1) {
-		reimbTrans = new ReimbursementTransactionModel();
+		let reimbTrans = new ReimbursementTransactionModel();
+		let employee = new EmployeeModel();
 
 		reimbTrans.FlexReimbursementId =
 			singleResultArr[0].flex_reimbursement_id;
@@ -216,8 +215,13 @@ async function getByTransactionNumber(transactionNumber) {
 		reimbTrans.Status = singleResultArr[0].status;
 		reimbTrans.DateUpdated = singleResultArr[0].date_updated;
 		reimbTrans.TransactionNumber = singleResultArr[0].transaction_number;
+		employee.EmployeeNumber = singleResultArr[0].employee_number;
+		employee.FirstName = singleResultArr[0].firstname;
+		employee.LastName = singleResultArr[0].lastName;
+		transactionAndEmployee = { ...reimbTrans, ...employee };
 	}
-	return reimbTrans;
+
+	return transactionAndEmployee;
 }
 
 async function updateStatusToApprovedOnTransactionId(transactionNumber) {

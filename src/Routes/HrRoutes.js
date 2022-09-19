@@ -56,11 +56,11 @@ async function getReimbTransItems(req, res, next) {
 			.includes(AUDIENCE_OPTIONS.GET_REIMB_DETAILS)
 	) {
 		try {
-			let reimbTransId = parseInt(req.query.id);
+			let transactionNumber = req.query.transactionNumber;
 
 			let transaction =
-				await DbReimbursementTransaction.getByTransactionId(
-					reimbTransId
+				await DbReimbursementTransaction.getByTransactionNumber(
+					transactionNumber
 				);
 			if (!transaction) {
 				res.status(404).json({
@@ -71,7 +71,7 @@ async function getReimbTransItems(req, res, next) {
 
 				let reimbItemsArr =
 					await DbReimbursementItem.getItemsByReimbTransId(
-						reimbTransId
+						transaction.FlexReimbursementId
 					);
 				let formatteditemsArr = [];
 
@@ -114,13 +114,12 @@ async function searchReimbTransaction(req, res, next) {
 			let empFirstname = req.query.employeeFirstname
 				? req.query.employeeFirstname
 				: "";
-			let status = req.query.status ? req.query.status : "";
+			// let status = req.query.status ? req.query.status : "";
 			let transactionArr =
 				await DbReimbursementTransaction.searchTransactionByEmployeeIdName(
 					empNumber,
 					empLastname,
-					empFirstname,
-					status
+					empFirstname
 				);
 			if (transactionArr.length === 0) {
 				res.status(404).json({
@@ -206,7 +205,47 @@ async function approveReimbTrans(req, res, next) {
 	}
 }
 
-async function rejectReimbTrans(req, res, next) {}
+async function rejectReimbTrans(req, res, next) {
+	if (
+		jwtHelper
+			.getAudienceFromToken(req.cookies.token)
+			.includes(AUDIENCE_OPTIONS.SEARCH_REIMB_TRANSACTION)
+	) {
+		try {
+			let reimbTransNumber = req.body.transactionNumber;
+
+			let transaction =
+				await DbReimbursementTransaction.getByTransactionNumber(
+					reimbTransNumber
+				);
+
+			if (!transaction) {
+				res.status(404).json({
+					...responses.notFoundBuilder("Transaction not found"),
+				});
+			} else {
+				await DbReimbursementTransaction.updateStatusToRejectedOnTransactionId(
+					reimbTransNumber
+				);
+				await DbReimbursementItem.updateStatusToRejectedOnTransactionId(
+					transaction.FlexReimbursementId
+				);
+				let token = await jwtHelper.generateToken(
+					req.cookies.token,
+					null
+				);
+				res.cookie("token", token, { httpOnly: true });
+				res.status(200).json({
+					...responses.OkResponseBuilder("OK. Transaction rejected"),
+				});
+			}
+		} catch (error) {
+			next(error);
+		}
+	} else {
+		res.status(403).json(responses.forbiddenResponse);
+	}
+}
 
 function formatTransaction(reimbTrans) {
 	reimbTrans.EmployeeName = `${reimbTrans.LastName}, ${reimbTrans.FirstName}`;
