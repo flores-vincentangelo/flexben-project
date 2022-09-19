@@ -49,6 +49,12 @@ router.get(
 	ReimbursementRoutes.submitTransaction
 );
 
+router.get(
+	"/print-transaction",
+	jwtHelper.verifyToken,
+	ReimbursementRoutes.printTransaction
+);
+
 // router.get(
 // 	"/create-reimbursement-transaction",
 // 	jwtHelper.verifyToken,

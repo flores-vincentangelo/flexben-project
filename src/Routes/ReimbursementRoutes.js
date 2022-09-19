@@ -12,11 +12,11 @@ const DbCompany = require("../DataAccess/Database/DbCompany");
 
 let ReimbursementRoutes = {
 	file,
-	test,
-	createTransaction,
+
 	getLatestDraftReimbItems,
 	deleteDraftReimbItem,
 	submitTransaction,
+	printTransaction,
 };
 module.exports = ReimbursementRoutes;
 
@@ -76,8 +76,8 @@ async function file(req, res, next) {
 				res.status(200).json({
 					...responses.createdBuilder("Reimbursement Filed"),
 					data: {
-						...reimbursementItem,
 						TransactionTotal: totalAmount,
+						...reimbursementItem,
 					},
 				});
 			}
@@ -192,6 +192,70 @@ async function submitTransaction(req, res, next) {
 		jwtHelper
 			.getAudienceFromToken(req.cookies.token)
 			.includes(AUDIENCE_OPTIONS.GET_ALL_REIMBURSEMENT_ITEMS)
+	) {
+		let email = jwtHelper.getEmployeeEmailFromToken(req.cookies.token);
+		try {
+			let reimbTrans =
+				await DbReimbursementTransaction.getLatestDraftByEmail(email);
+
+			if (!reimbTrans) {
+				res.status(400).json({
+					...responses.badRequestResponseBuilder(
+						"No draft transaction"
+					),
+				});
+			} else {
+				await calculateTransactionAmount(
+					reimbTrans.FlexReimbursementId
+				);
+				let validationResults =
+					await DataValidationHelper.validateTransaction(reimbTrans);
+
+				if (validationResults.errors.length != 0) {
+					res.status(400).json({
+						...responses.badRequestResponseBuilder(
+							validationResults.message
+						),
+						data: validationResults.errors,
+					});
+				} else {
+					//create transaction number
+					let transactionNumber = await generateTransactionNumber(
+						email,
+						reimbTrans
+					);
+					reimbTrans.TransactionNumber = transactionNumber;
+					//update transaction with transaction number and update to submitted
+					DbReimbursementTransaction.updateTransactionNumberAndStatusOnTransactionId(
+						reimbTrans
+					);
+					DbReimbursementItem.updateStatusToSubmittedOnTransactionId(
+						reimbTrans.FlexReimbursementId
+					);
+					let token = await jwtHelper.generateToken(
+						req.cookies.token,
+						null
+					);
+					res.cookie("token", token, { httpOnly: true });
+					res.status(200).json({
+						...responses.createdBuilder("Transaction submitted"),
+						data: reimbTrans,
+					});
+				}
+			}
+		} catch (error) {
+			next(error);
+		}
+	} else {
+		res.status(403).json(responses.forbiddenResponse);
+	}
+}
+
+async function printTransaction(req, res, next) {
+	if (
+		jwtHelper
+			.getAudienceFromToken(req.cookies.token)
+			.includes(AUDIENCE_OPTIONS.PRINT_TRANSACTION)
 	) {
 		let email = jwtHelper.getEmployeeEmailFromToken(req.cookies.token);
 		try {
