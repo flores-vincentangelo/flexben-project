@@ -1,12 +1,14 @@
 const DbConnection = require("./DbConnection");
 const mysql = require("mysql");
 const ReimbursementTransactionModel = require("../../Models/ReimbursementTransactionModel");
+const EmployeeModel = require("../../Models/EmployeeModel");
 
 let DbReimbursementTransaction = {
 	add,
 	getLatestDraftByEmail,
 	updateAmountOnTransactionId,
 	updateTransactionNumberAndStatusOnTransactionId,
+	getByCutoffId,
 };
 
 module.exports = DbReimbursementTransaction;
@@ -66,4 +68,39 @@ async function updateTransactionNumberAndStatusOnTransactionId(reimbTrans) {
 	];
 	let query = mysql.format(sql, inserts);
 	return await DbConnection.runQuery(query);
+}
+
+async function getByCutoffId(cutoffId) {
+	let sql = `SELECT flex_reimbursement .*, employees.firstname, employees.lastName, employees.employee_number 
+        FROM flex_reimbursement 
+        LEFT JOIN employees
+        ON flex_reimbursement.employee_id = employees.employee_id
+        WHERE flex_cut_off_id = ? 
+        ORDER BY status DESC;`;
+	let inserts = [cutoffId];
+	let query = mysql.format(sql, inserts);
+	let resultsArr = await DbConnection.runQuery(query);
+
+	let transactionAndEmployeeArr = [];
+	resultsArr.forEach(element => {
+		let reimbTrans = new ReimbursementTransactionModel();
+		let employee = new EmployeeModel();
+
+		reimbTrans.FlexReimbursementId = element.flex_reimbursement_id;
+		reimbTrans.EmployeeId = element.employee_id;
+		reimbTrans.FlexCutoffId = element.flex_cut_off_id;
+		reimbTrans.TotalReimbursementAmount =
+			element.total_reimbursement_amount;
+		reimbTrans.DateSubmitted = element.date_submitted;
+		reimbTrans.Status = element.status;
+		reimbTrans.DateUpdated = element.date_updated;
+		reimbTrans.TransactionNumber = element.transaction_number;
+		employee.EmployeeNumber = element.employee_number;
+		employee.FirstName = element.firstname;
+		employee.LastName = element.lastName;
+		let customObj = { ...reimbTrans, ...employee };
+		transactionAndEmployeeArr.push(customObj);
+	});
+
+	return transactionAndEmployeeArr;
 }
