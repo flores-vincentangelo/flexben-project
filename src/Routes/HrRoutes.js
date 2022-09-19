@@ -98,7 +98,64 @@ async function getReimbTransItems(req, res, next) {
 	}
 }
 
-async function searchReimbTransaction(req, res, next) {}
+async function searchReimbTransaction(req, res, next) {
+	//     "Search filters should be:
+	// * Employee ID
+	// * Employee Last Name
+	// * Employee First Name
+	// Search results should show the reimbursement and reimbursement details, if found."
+
+	if (
+		jwtHelper
+			.getAudienceFromToken(req.cookies.token)
+			.includes(AUDIENCE_OPTIONS.SEARCH_REIMB_TRANSACTION)
+	) {
+		try {
+			res.status(200).json({
+				...responses.OkResponseBuilder("OK"),
+				data: { ...req.query },
+			});
+			// let reimbTransId = parseInt(req.query.id);
+
+			// let transaction =
+			// 	await DbReimbursementTransaction.getByTransactionId(
+			// 		reimbTransId
+			// 	);
+			// if (!transaction) {
+			// 	res.status(404).json({
+			// 		...responses.notFoundBuilder("Transaction not found"),
+			// 	});
+			// } else {
+			// 	let formattedTransaction = formatTransaction(transaction);
+
+			// 	let reimbItemsArr =
+			// 		await DbReimbursementItem.getItemsByReimbTransId(
+			// 			reimbTransId
+			// 		);
+			// 	let formatteditemsArr = [];
+
+			// 	reimbItemsArr.forEach(reimbItem => {
+			// 		let formattedItem = formatItem(reimbItem);
+			// 		formatteditemsArr.push(formattedItem);
+			// 	});
+
+			// 	let token = await jwtHelper.generateToken(
+			// 		req.cookies.token,
+			// 		null
+			// 	);
+			// 	res.cookie("token", token, { httpOnly: true });
+			// 	res.status(200).json({
+			// 		...responses.OkResponseBuilder("OK"),
+			// 		data: { formattedTransaction, items: formatteditemsArr },
+			// 	});
+			// }
+		} catch (error) {
+			next(error);
+		}
+	} else {
+		res.status(403).json(responses.forbiddenResponse);
+	}
+}
 
 async function approveReimbTrans(req, res, next) {}
 
