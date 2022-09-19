@@ -2,7 +2,7 @@ Employee Name:   Lopez, Opal
 Employee Number:	12035
 Date Submitted:		September 19, 2022
 Transaction Number: PWINNOV-3-20220919-4
-Amount:	Php 14100.00
+Amount:	Php 1000.00
 Status:	Submitted
 
 === DETAILS ===
@@ -19,17 +19,17 @@ CATEGORY: FOOD, RESTAURANT & GROCERIES Claim Category
 Item # 1
 Date: September 19, 2022
 OR Number: 11111222223333
-Name of Establishment: Mcdo
-TIN of Establishment: Bagong transaction pare 2
+Name of Establishment: KFC 3
+TIN of Establishment: 0111111111111
 Amount: Php 500.00
 Status: Submitted
 
 Item # 2
 Date: September 19, 2022
 OR Number: 11111222223333
-Name of Establishment: KFC
+Name of Establishment: KFC 3
 TIN of Establishment: 0111111111111
-Amount: Php 600.00
+Amount: Php 500.00
 Status: Submitted
 
 CATEGORY: FASHION Claim Category
@@ -39,25 +39,13 @@ CATEGORY: ENTERTAINMENT Claim Category
 N/A
 
 CATEGORY: GADGETS Claim Category
-Item # 1
-Date: September 19, 2022
-OR Number: 11111222223333
-Name of Establishment: Dell
-TIN of Establishment: 0111111111111
-Amount: Php 10000.00
-Status: Submitted
+N/A
 
 CATEGORY: TRANSPORTATION Claim Category
 N/A
 
 CATEGORY: TRAVEL & LEISURE Claim Category
-Item # 1
-Date: September 19, 2022
-OR Number: 11111222223333
-Name of Establishment: Vacation
-TIN of Establishment: 0111111111111
-Amount: Php 3000.00
-Status: Submitted
+N/A
 
 CATEGORY: CONNECTIVITY Claim Category
 N/A

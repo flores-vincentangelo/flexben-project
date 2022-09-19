@@ -1,4 +1,4 @@
 ********************************************************************************
 Date/Time: 9/19/2022 
-Exception Info: {"status":500,"statusText":"Internal Server Error","message":"Found non-callable @@iterator","error":{"stack":"TypeError: Found non-callable @@iterator\n    at printTransaction (E:\\programing\\nodejs\\flexben-project\\src\\Routes\\ReimbursementRoutes.js:278:21)\n    at processTicksAndRejections (node:internal/process/task_queues:96:5)"},"requestInfo":{"hostname":"localhost","path":"/api//print-transaction"}} 
+Exception Info: {"status":500,"statusText":"Internal Server Error","message":"reimbTrans.DateSubmitted is not a function","error":{"stack":"TypeError: reimbTrans.DateSubmitted is not a function\n    at submitTransaction (E:\\programing\\nodejs\\flexben-project\\src\\Routes\\ReimbursementRoutes.js:238:17)\n    at processTicksAndRejections (node:internal/process/task_queues:96:5)"},"requestInfo":{"hostname":"localhost","path":"/api//submit-transaction"}} 
 ********************************************************************************

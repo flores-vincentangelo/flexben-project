@@ -235,7 +235,7 @@ async function submitTransaction(req, res, next) {
 						req.cookies.token,
 						null
 					);
-					reimbTrans.DateSubmitted(formatDate(new Date()));
+					reimbTrans.DateSubmitted = formatDate(new Date());
 					res.cookie("token", token, { httpOnly: true });
 					res.status(200).json({
 						...responses.createdBuilder("Transaction submitted"),
