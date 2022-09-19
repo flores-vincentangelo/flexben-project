@@ -167,7 +167,7 @@ async function approveReimbTrans(req, res, next) {
 	if (
 		jwtHelper
 			.getAudienceFromToken(req.cookies.token)
-			.includes(AUDIENCE_OPTIONS.SEARCH_REIMB_TRANSACTION)
+			.includes(AUDIENCE_OPTIONS.APPROVE_REIMB_TRANSACTION)
 	) {
 		try {
 			let reimbTransNumber = req.body.transactionNumber;
@@ -209,7 +209,7 @@ async function rejectReimbTrans(req, res, next) {
 	if (
 		jwtHelper
 			.getAudienceFromToken(req.cookies.token)
-			.includes(AUDIENCE_OPTIONS.SEARCH_REIMB_TRANSACTION)
+			.includes(AUDIENCE_OPTIONS.REJECT_REIMB_TRANSACTION)
 	) {
 		try {
 			let reimbTransNumber = req.body.transactionNumber;

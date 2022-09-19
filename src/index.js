@@ -49,11 +49,11 @@ router.get(
 	ReimbursementRoutes.submitTransaction
 );
 
-router.get(
-	"/create-reimbursement-transaction",
-	jwtHelper.verifyToken,
-	ReimbursementRoutes.createTransaction
-);
+// router.get(
+// 	"/create-reimbursement-transaction",
+// 	jwtHelper.verifyToken,
+// 	ReimbursementRoutes.createTransaction
+// );
 
 // flexpoints
 router.get(
