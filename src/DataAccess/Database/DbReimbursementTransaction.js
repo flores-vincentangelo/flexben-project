@@ -192,8 +192,10 @@ async function searchTransactionByEmployeeIdName(
 }
 
 async function getByTransactionNumber(transactionNumber) {
-	let sql = `SELECT *
+	let sql = `SELECT flex_reimbursement.*, employees.firstname, employees.lastName, employees.employee_number, employees.email 
             FROM flex_reimbursement
+            LEFT JOIN employees
+            ON flex_reimbursement.employee_id = employees.employee_id
             WHERE flex_reimbursement.status = 'submitted'
             AND transaction_number = ?;`;
 	let inserts = [transactionNumber];
@@ -218,6 +220,7 @@ async function getByTransactionNumber(transactionNumber) {
 		employee.EmployeeNumber = singleResultArr[0].employee_number;
 		employee.FirstName = singleResultArr[0].firstname;
 		employee.LastName = singleResultArr[0].lastName;
+		employee.Email = singleResultArr[0].email;
 		transactionAndEmployee = { ...reimbTrans, ...employee };
 	}
 

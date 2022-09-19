@@ -33,7 +33,7 @@ async function file(reimbursementItem) {
 }
 
 async function getItemsByReimbTransId(reimbTransId) {
-	let sql = `SELECT flex_reimbursement_details.*, categories.name AS category_name
+	let sql = `SELECT flex_reimbursement_details.*, categories.category_id ,categories.name AS category_name
     FROM flex_reimbursement_details
     LEFT JOIN categories
     ON flex_reimbursement_details.category_id = categories.category_id
@@ -57,6 +57,7 @@ async function getItemsByReimbTransId(reimbTransId) {
 		reimbItem.CategoryId = element.category_id;
 		reimbItem.Status = element.status;
 		reimbItem.Date = element.date_added;
+		category.CategoryId = element.category_id;
 		category.CategoryName = element.category_name;
 
 		reimbItemsArr.push({ ...reimbItem, ...category });

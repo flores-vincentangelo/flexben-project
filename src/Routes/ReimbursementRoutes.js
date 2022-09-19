@@ -9,6 +9,8 @@ const DbEmployees = require("../DataAccess/Database/DbEmployees");
 const DbReimbursementTransaction = require("../DataAccess/Database/DbReimbursementTransaction");
 const DbReimbursementItem = require("../DataAccess/Database/DbReimbursementItem");
 const DbCompany = require("../DataAccess/Database/DbCompany");
+const DbCategory = require("../DataAccess/Database/DbCategory");
+const FileReimbursementTransaction = require("../DataAccess/Files/FileReimbursementTransaction");
 
 let ReimbursementRoutes = {
 	file,
@@ -219,13 +221,11 @@ async function submitTransaction(req, res, next) {
 						data: validationResults.errors,
 					});
 				} else {
-					//create transaction number
 					let transactionNumber = await generateTransactionNumber(
 						email,
 						reimbTrans
 					);
 					reimbTrans.TransactionNumber = transactionNumber;
-					//update transaction with transaction number and update to submitted
 					DbReimbursementTransaction.updateTransactionNumberAndStatusOnTransactionId(
 						reimbTrans
 					);
@@ -261,55 +261,43 @@ async function printTransaction(req, res, next) {
 		let reimbTransNumber = req.body.transactionNumber;
 
 		try {
-			let reimbTrans =
+			let transaction =
 				await DbReimbursementTransaction.getByTransactionNumber(
 					reimbTransNumber
 				);
 
-			if (!reimbTrans) {
-				res.status(400).json({
-					...responses.badRequestResponseBuilder(
-						"Transaction not found"
-					),
+			if (!transaction) {
+				res.status(404).json({
+					...responses.notFoundBuilder("Transaction not found"),
 				});
-			} else {
-				await calculateTransactionAmount(
-					reimbTrans.FlexReimbursementId
+			} else if (transaction.Email != email) {
+				res.status(400).json(
+					...responses.badRequestResponseBuilder(
+						"You cannot access this transaction"
+					)
 				);
-				let validationResults =
-					await DataValidationHelper.validateTransaction(reimbTrans);
+			} else {
+				let reimbItemsArr =
+					await DbReimbursementItem.getItemsByReimbTransId(
+						transaction.FlexReimbursementId
+					);
+				let categories = await DbCategory.getAll();
 
-				if (validationResults.errors.length != 0) {
-					res.status(400).json({
-						...responses.badRequestResponseBuilder(
-							validationResults.message
-						),
-						data: validationResults.errors,
-					});
-				} else {
-					//create transaction number
-					let transactionNumber = await generateTransactionNumber(
-						email,
-						reimbTrans
-					);
-					reimbTrans.TransactionNumber = transactionNumber;
-					//update transaction with transaction number and update to submitted
-					DbReimbursementTransaction.updateTransactionNumberAndStatusOnTransactionId(
-						reimbTrans
-					);
-					DbReimbursementItem.updateStatusToSubmittedOnTransactionId(
-						reimbTrans.FlexReimbursementId
-					);
-					let token = await jwtHelper.generateToken(
-						req.cookies.token,
-						null
-					);
-					res.cookie("token", token, { httpOnly: true });
-					res.status(200).json({
-						...responses.createdBuilder("Transaction submitted"),
-						data: reimbTrans,
-					});
-				}
+				await FileReimbursementTransaction.print(
+					transaction,
+					reimbItemsArr,
+					categories
+				);
+
+				let token = await jwtHelper.generateToken(
+					req.cookies.token,
+					null
+				);
+				res.cookie("token", token, { httpOnly: true });
+				res.status(200).json({
+					...responses.createdBuilder("Transaction submitted"),
+					data: { transaction, items: reimbItemsArr },
+				});
 			}
 		} catch (error) {
 			next(error);
