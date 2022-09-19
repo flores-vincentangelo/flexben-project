@@ -4,7 +4,6 @@ let FileReimbursementTransaction = { print };
 module.exports = FileReimbursementTransaction;
 
 async function print(transaction, reimbItemsArr, categories) {
-	// "reimbursement_balasabas_johncarlos_08282018_PWINNOV-2-20180828-1.txt"
 	let transactionLastname = transaction.LastName.toLowerCase();
 	let transactionFirstname = transaction.FirstName.toLowerCase().replace(
 		" ",
