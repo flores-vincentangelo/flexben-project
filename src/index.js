@@ -78,6 +78,11 @@ router.get(
 	jwtHelper.verifyToken,
 	HrRoutes.searchReimbTransaction
 );
+router.post(
+	"/approve-reimbursement",
+	jwtHelper.verifyToken,
+	HrRoutes.approveReimbTrans
+);
 
 // configure tables
 router.get("/config/tables", ConfigRoutes.tables);

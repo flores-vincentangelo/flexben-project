@@ -153,7 +153,6 @@ async function searchReimbTransaction(req, res, next) {
 				res.cookie("token", token, { httpOnly: true });
 				res.status(200).json({
 					...responses.OkResponseBuilder("OK"),
-					// data: { formattedTransaction, items: formatteditemsArr },
 					data: formattedTransactionAndItemsArr,
 				});
 			}
@@ -165,7 +164,47 @@ async function searchReimbTransaction(req, res, next) {
 	}
 }
 
-async function approveReimbTrans(req, res, next) {}
+async function approveReimbTrans(req, res, next) {
+	if (
+		jwtHelper
+			.getAudienceFromToken(req.cookies.token)
+			.includes(AUDIENCE_OPTIONS.SEARCH_REIMB_TRANSACTION)
+	) {
+		try {
+			let reimbTransNumber = req.body.transactionNumber;
+
+			let transaction =
+				await DbReimbursementTransaction.getByTransactionNumber(
+					reimbTransNumber
+				);
+
+			if (!transaction) {
+				res.status(404).json({
+					...responses.notFoundBuilder("Transaction not found"),
+				});
+			} else {
+				await DbReimbursementTransaction.updateStatusToApprovedOnTransactionId(
+					reimbTransNumber
+				);
+				await DbReimbursementItem.updateStatusToApprovedOnTransactionId(
+					transaction.FlexReimbursementId
+				);
+				let token = await jwtHelper.generateToken(
+					req.cookies.token,
+					null
+				);
+				res.cookie("token", token, { httpOnly: true });
+				res.status(200).json({
+					...responses.OkResponseBuilder("OK. Transaction approved"),
+				});
+			}
+		} catch (error) {
+			next(error);
+		}
+	} else {
+		res.status(403).json(responses.forbiddenResponse);
+	}
+}
 
 async function rejectReimbTrans(req, res, next) {}
 

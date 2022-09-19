@@ -9,6 +9,8 @@ let DbReimbursementItem = {
 	getItemByItemIdAndTransactionId,
 	deleteItemByItemIdAndTransactionId,
 	updateStatusToSubmittedOnTransactionId,
+	updateStatusToApprovedOnTransactionId,
+	updateStatusToRejectedOnTransactionId,
 };
 module.exports = DbReimbursementItem;
 
@@ -106,6 +108,28 @@ async function updateStatusToSubmittedOnTransactionId(reimbTransId) {
 	let sql = `UPDATE flex_reimbursement_details
 	SET status = 'Submitted'
     WHERE flex_reimbursement_id = ?
+    AND deleted = 'n';`;
+	let inserts = [reimbTransId];
+	let query = mysql.format(sql, inserts);
+	return await DbConnection.runQuery(query);
+}
+
+async function updateStatusToApprovedOnTransactionId(reimbTransId) {
+	let sql = `UPDATE flex_reimbursement_details
+	SET status = 'Approved'
+    WHERE flex_reimbursement_id = ?
+    AND status = 'Submitted'
+    AND deleted = 'n';`;
+	let inserts = [reimbTransId];
+	let query = mysql.format(sql, inserts);
+	return await DbConnection.runQuery(query);
+}
+
+async function updateStatusToRejectedOnTransactionId(reimbTransId) {
+	let sql = `UPDATE flex_reimbursement_details
+	SET status = 'Rejected'
+    WHERE flex_reimbursement_id = ?
+    AND status = 'Submitted'
     AND deleted = 'n';`;
 	let inserts = [reimbTransId];
 	let query = mysql.format(sql, inserts);

@@ -11,6 +11,9 @@ let DbReimbursementTransaction = {
 	getByCutoffId,
 	getByTransactionId,
 	searchTransactionByEmployeeIdName,
+	updateStatusToApprovedOnTransactionId,
+	updateStatusToRejectedOnTransactionId,
+	getByTransactionNumber,
 };
 
 module.exports = DbReimbursementTransaction;
@@ -78,6 +81,7 @@ async function getByCutoffId(cutoffId) {
         LEFT JOIN employees
         ON flex_reimbursement.employee_id = employees.employee_id
         WHERE flex_cut_off_id = ? 
+        AND status = "submitted"
         ORDER BY status DESC;`;
 	let inserts = [cutoffId];
 	let query = mysql.format(sql, inserts);
@@ -187,4 +191,50 @@ async function searchTransactionByEmployeeIdName(
 		});
 	}
 	return transactionAndEmployeeArr;
+}
+
+async function getByTransactionNumber(transactionNumber) {
+	let sql = `SELECT *
+            FROM flex_reimbursement
+            WHERE flex_reimbursement.status = 'submitted'
+            AND transaction_number = ?;`;
+	let inserts = [transactionNumber];
+	let query = mysql.format(sql, inserts);
+	let singleResultArr = await DbConnection.runQuery(query);
+
+	let reimbTrans;
+	if (singleResultArr.length === 1) {
+		reimbTrans = new ReimbursementTransactionModel();
+
+		reimbTrans.FlexReimbursementId =
+			singleResultArr[0].flex_reimbursement_id;
+		reimbTrans.EmployeeId = singleResultArr[0].employee_id;
+		reimbTrans.FlexCutoffId = singleResultArr[0].flex_cut_off_id;
+		reimbTrans.TotalReimbursementAmount =
+			singleResultArr[0].total_reimbursement_amount;
+		reimbTrans.DateSubmitted = singleResultArr[0].date_submitted;
+		reimbTrans.Status = singleResultArr[0].status;
+		reimbTrans.DateUpdated = singleResultArr[0].date_updated;
+		reimbTrans.TransactionNumber = singleResultArr[0].transaction_number;
+	}
+	return reimbTrans;
+}
+
+async function updateStatusToApprovedOnTransactionId(transactionNumber) {
+	let sql = `UPDATE flex_reimbursement
+    SET status = 'Approved'
+    WHERE transaction_number = ?
+    AND status = 'Submitted';`;
+	let inserts = [transactionNumber];
+	let query = mysql.format(sql, inserts);
+	return await DbConnection.runQuery(query);
+}
+async function updateStatusToRejectedOnTransactionId(transactionNumber) {
+	let sql = `UPDATE flex_reimbursement
+    SET status = 'Rejected'
+    WHERE transaction_number = ?
+    AND status = 'Submitted';`;
+	let inserts = [transactionNumber];
+	let query = mysql.format(sql, inserts);
+	return await DbConnection.runQuery(query);
 }
