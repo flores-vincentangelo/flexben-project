@@ -9,6 +9,7 @@ let DbReimbursementTransaction = {
 	updateAmountOnTransactionId,
 	updateTransactionNumberAndStatusOnTransactionId,
 	getByCutoffId,
+	getByTransactionId,
 };
 
 module.exports = DbReimbursementTransaction;
@@ -103,4 +104,38 @@ async function getByCutoffId(cutoffId) {
 	});
 
 	return transactionAndEmployeeArr;
+}
+
+async function getByTransactionId(reimbTransId) {
+	let sql = `SELECT flex_reimbursement .*, employees.firstname, employees.lastName, employees.employee_number 
+        FROM flex_reimbursement 
+        LEFT JOIN employees
+        ON flex_reimbursement.employee_id = employees.employee_id
+        WHERE flex_reimbursement_id = ?;`;
+	let inserts = [reimbTransId];
+	let query = mysql.format(sql, inserts);
+	let singleResultArr = await DbConnection.runQuery(query);
+
+	let transactionAndEmployee;
+	if (singleResultArr.length === 1) {
+		let reimbTrans = new ReimbursementTransactionModel();
+		let employee = new EmployeeModel();
+
+		reimbTrans.FlexReimbursementId =
+			singleResultArr[0].flex_reimbursement_id;
+		reimbTrans.EmployeeId = singleResultArr[0].employee_id;
+		reimbTrans.FlexCutoffId = singleResultArr[0].flex_cut_off_id;
+		reimbTrans.TotalReimbursementAmount =
+			singleResultArr[0].total_reimbursement_amount;
+		reimbTrans.DateSubmitted = singleResultArr[0].date_submitted;
+		reimbTrans.Status = singleResultArr[0].status;
+		reimbTrans.DateUpdated = singleResultArr[0].date_updated;
+		reimbTrans.TransactionNumber = singleResultArr[0].transaction_number;
+		employee.EmployeeNumber = singleResultArr[0].employee_number;
+		employee.FirstName = singleResultArr[0].firstname;
+		employee.LastName = singleResultArr[0].lastName;
+		transactionAndEmployee = { ...reimbTrans, ...employee };
+	}
+
+	return transactionAndEmployee;
 }

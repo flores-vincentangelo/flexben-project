@@ -1,6 +1,7 @@
 const DbConnection = require("./DbConnection");
 const mysql = require("mysql");
 const ReimbursementItemModel = require("../../Models/ReimbursementItemModel");
+const CategoryModel = require("../../Models/CategoryModel");
 
 let DbReimbursementItem = {
 	file,
@@ -30,7 +31,10 @@ async function file(reimbursementItem) {
 }
 
 async function getItemsByReimbTransId(reimbTransId) {
-	let sql = `SELECT * FROM flex_reimbursement_details
+	let sql = `SELECT flex_reimbursement_details.*, categories.name AS category_name
+    FROM flex_reimbursement_details
+    LEFT JOIN categories
+    ON flex_reimbursement_details.category_id = categories.category_id
     WHERE flex_reimbursement_id = ?
     AND deleted = 'n';`;
 
@@ -41,6 +45,7 @@ async function getItemsByReimbTransId(reimbTransId) {
 	let reimbItemsArr = [];
 	resultsArr.forEach(element => {
 		let reimbItem = new ReimbursementItemModel();
+		let category = new CategoryModel();
 		reimbItem.ReimItemId = element.flex_reimbursement_detail_id;
 		reimbItem.ReimTransId = element.flex_reimbursement_id;
 		reimbItem.OrNumber = element.or_number;
@@ -50,7 +55,9 @@ async function getItemsByReimbTransId(reimbTransId) {
 		reimbItem.CategoryId = element.category_id;
 		reimbItem.Status = element.status;
 		reimbItem.Date = element.date_added;
-		reimbItemsArr.push(reimbItem);
+		category.CategoryName = element.category_name;
+
+		reimbItemsArr.push({ ...reimbItem, ...category });
 	});
 
 	return reimbItemsArr;

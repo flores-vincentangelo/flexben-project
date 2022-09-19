@@ -2,6 +2,7 @@ const responses = require("../Helpers/responsesHelper");
 const { AUDIENCE_OPTIONS } = require("../env/constants");
 const jwtHelper = require("../Helpers/jwtHelper");
 const DbReimbursementTransaction = require("../DataAccess/Database/DbReimbursementTransaction");
+const DbReimbursementItem = require("../DataAccess/Database/DbReimbursementItem");
 
 let HrRoutes = {
 	getReimbTransByCutoff,
@@ -26,18 +27,9 @@ async function getReimbTransByCutoff(req, res, next) {
 			);
 			let formattedArr = [];
 
-			transactionArr.forEach(element => {
-				element.EmployeeName = `${element.LastName}, ${element.FirstName}`;
-				let formattedDate = formatDate(element.DateSubmitted);
-				let obj = {
-					"Transaction number": element.TransactionNumber,
-					"Employee Number": element.EmployeeNumber,
-					"Employee Name ": element.EmployeeName,
-					"Amount to be reimbursed": element.TotalReimbursementAmount,
-					"Date Submitted": formattedDate,
-					Status: element.Status,
-				};
-				formattedArr.push(obj);
+			transactionArr.forEach(reimbTrans => {
+				let formattedTransaction = formatTransaction(reimbTrans);
+				formattedArr.push(formattedTransaction);
 			});
 
 			let token = await jwtHelper.generateToken(req.cookies.token, null);
@@ -64,36 +56,40 @@ async function getReimbTransItems(req, res, next) {
 			.includes(AUDIENCE_OPTIONS.GET_REIMB_DETAILS)
 	) {
 		try {
-			let flexCutoffId = parseInt(req.query.id);
+			let reimbTransId = parseInt(req.query.id);
 
-			let transactionArr = await DbReimbursementTransaction.getByCutoffId(
-				flexCutoffId
-			);
-			let formattedArr = [];
+			let transaction =
+				await DbReimbursementTransaction.getByTransactionId(
+					reimbTransId
+				);
+			if (!transaction) {
+				res.status(404).json({
+					...responses.notFoundBuilder("Transaction not found"),
+				});
+			} else {
+				let formattedTransaction = formatTransaction(transaction);
 
-			transactionArr.forEach(element => {
-				element.EmployeeName = `${element.LastName}, ${element.FirstName}`;
-				let formattedDate = formatDate(element.DateSubmitted);
-				let obj = {
-					"Transaction number": element.TransactionNumber,
-					"Employee Number": element.EmployeeNumber,
-					"Employee Name ": element.EmployeeName,
-					"Amount to be reimbursed": element.TotalReimbursementAmount,
-					"Date Submitted": formattedDate,
-					Status: element.Status,
-				};
-				formattedArr.push(obj);
-			});
+				let reimbItemsArr =
+					await DbReimbursementItem.getItemsByReimbTransId(
+						reimbTransId
+					);
+				let formatteditemsArr = [];
 
-			let token = await jwtHelper.generateToken(req.cookies.token, null);
-			res.cookie("token", token, { httpOnly: true });
-			res.status(200).json({
-				...responses.OkResponseBuilder("OK"),
-				data: {
-					length: transactionArr.length,
-					transactions: formattedArr,
-				},
-			});
+				reimbItemsArr.forEach(reimbItem => {
+					let formattedItem = formatItem(reimbItem);
+					formatteditemsArr.push(formattedItem);
+				});
+
+				let token = await jwtHelper.generateToken(
+					req.cookies.token,
+					null
+				);
+				res.cookie("token", token, { httpOnly: true });
+				res.status(200).json({
+					...responses.OkResponseBuilder("OK"),
+					data: { formattedTransaction, items: formatteditemsArr },
+				});
+			}
 		} catch (error) {
 			next(error);
 		}
@@ -107,6 +103,31 @@ async function searchReimbTransaction(req, res, next) {}
 async function approveReimbTrans(req, res, next) {}
 
 async function rejectReimbTrans(req, res, next) {}
+
+function formatTransaction(reimbTrans) {
+	reimbTrans.EmployeeName = `${reimbTrans.LastName}, ${reimbTrans.FirstName}`;
+	let formattedDate = formatDate(reimbTrans.DateSubmitted);
+	return {
+		"Transaction number": reimbTrans.TransactionNumber,
+		"Employee Number": reimbTrans.EmployeeNumber,
+		"Employee Name ": reimbTrans.EmployeeName,
+		"Amount to be reimbursed": reimbTrans.TotalReimbursementAmount,
+		"Date Submitted": formattedDate,
+		Status: reimbTrans.Status,
+	};
+}
+
+function formatItem(reimbItem) {
+	let formattedDate = formatDate(reimbItem.Date);
+	return {
+		Date: formattedDate,
+		"OR Number": reimbItem.OrNumber,
+		"Name of establishment": reimbItem.NameEstablishment,
+		"TIN of establishment": reimbItem.TinEstablishment,
+		Amount: reimbItem.Amount,
+		Category: reimbItem.CategoryName,
+	};
+}
 
 function formatDate(dateToFormat) {
 	let date = new Date(dateToFormat);
