@@ -55,12 +55,6 @@ router.post(
 	ReimbursementRoutes.printTransaction
 );
 
-// router.get(
-// 	"/create-reimbursement-transaction",
-// 	jwtHelper.verifyToken,
-// 	ReimbursementRoutes.createTransaction
-// );
-
 // flexpoints
 router.get(
 	"/calculate-flex-points",

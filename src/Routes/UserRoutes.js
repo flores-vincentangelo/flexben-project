@@ -9,31 +9,31 @@ module.exports = UserRoutes;
 
 let saltRounds = 10;
 
-async function register(req, res, next) {
-	let user = new CredentialsModel();
-	user.Email = req.body.email;
-	user.UnhashedPassword = req.body.password;
+// async function register(req, res, next) {
+// 	let user = new CredentialsModel();
+// 	user.Email = req.body.email;
+// 	user.UnhashedPassword = req.body.password;
 
-	try {
-		let account = await DbAccounts.getAccountByEmployeeEmail(user.Email);
-		if (account) {
-			res.status(409).json({
-				...responses.conflictResponseBuilder("User already exists"),
-			});
-			return;
-		}
-		user.HashedPassword = await bcrypt.hash(
-			user.UnhashedPassword,
-			saltRounds
-		);
-		await DbAccounts.register(user);
-		res.status(201).json({
-			...responses.createdBuilder("User Added"),
-		});
-	} catch (error) {
-		next(error);
-	}
-}
+// 	try {
+// 		let account = await DbAccounts.getAccountByEmployeeEmail(user.Email);
+// 		if (account) {
+// 			res.status(409).json({
+// 				...responses.conflictResponseBuilder("User already exists"),
+// 			});
+// 			return;
+// 		}
+// 		user.HashedPassword = await bcrypt.hash(
+// 			user.UnhashedPassword,
+// 			saltRounds
+// 		);
+// 		await DbAccounts.register(user);
+// 		res.status(201).json({
+// 			...responses.createdBuilder("User Added"),
+// 		});
+// 	} catch (error) {
+// 		next(error);
+// 	}
+// }
 
 async function login(req, res, next) {
 	let invalidCredsMessage = "Invalid username or password";

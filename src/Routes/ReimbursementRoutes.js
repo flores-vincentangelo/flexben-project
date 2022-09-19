@@ -14,7 +14,6 @@ const FileReimbursementTransaction = require("../DataAccess/Files/FileReimbursem
 
 let ReimbursementRoutes = {
 	file,
-
 	getLatestDraftReimbItems,
 	deleteDraftReimbItem,
 	submitTransaction,
@@ -39,21 +38,21 @@ async function file(req, res, next) {
 		let email = jwtHelper.getEmployeeEmailFromToken(req.cookies.token);
 
 		try {
-			let reimbTrans =
+			let transaction =
 				await DbReimbursementTransaction.getLatestDraftByEmail(email);
 
-			if (!reimbTrans) {
+			if (!transaction) {
 				await addReimbursementTransaction(email);
-				reimbTrans =
+				transaction =
 					await DbReimbursementTransaction.getLatestDraftByEmail(
 						email
 					);
 			}
-			reimbursementItem.ReimTransId = reimbTrans.FlexReimbursementId;
+			reimbursementItem.ReimTransId = transaction.FlexReimbursementId;
 			let validationResults =
 				await DataValidationHelper.validateReimbursementItem(
 					reimbursementItem,
-					reimbTrans
+					transaction
 				);
 
 			if (validationResults.errors.length != 0) {
@@ -68,7 +67,7 @@ async function file(req, res, next) {
 
 				await DbReimbursementItem.file(reimbursementItem);
 				let totalAmount = await calculateTransactionAmount(
-					reimbTrans.FlexReimbursementId
+					transaction.FlexReimbursementId
 				);
 				let token = await jwtHelper.generateToken(
 					req.cookies.token,
