@@ -325,17 +325,11 @@ async function calculateTransactionAmount(reimbTransId) {
 }
 
 async function generateTransactionNumber(email, reimbTrans) {
-	// <Company code>-<cut-off id>-<YYYYMMDD>-<reimbursement id>
-	// PWINNOV-2-20180828-1
-	// query company code using email
 	let company = await DbCompany.getCompanyByEmployeeEmail(email);
-	// cut off id in reimbTrans.FlexCutoffId
-	// YYYYMMDDOfSubmission
 	let dateNow = new Date();
 	let formattedDate = `${dateNow.getFullYear()}${(dateNow.getMonth() + 1)
 		.toString()
 		.padStart(2, "0")}${dateNow.getDate()}`;
-	// reimbursement id = reimbTrans.FlexReimbursementId
 
 	let transactionNumber = `${company.Code}-${reimbTrans.FlexCutoffId}-${formattedDate}-${reimbTrans.FlexReimbursementId}`;
 	return transactionNumber;
