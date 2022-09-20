@@ -38,6 +38,8 @@ router.get(
 	jwtHelper.verifyToken,
 	ReimbursementRoutes.getLatestDraftReimbItems
 );
+
+// update status deleted
 router.delete(
 	"/remove-reimbursement-item",
 	jwtHelper.verifyToken,
@@ -62,7 +64,8 @@ router.get(
 	FlexPointsRoutes.calculateFlexPoints
 );
 
-// hr endpoints
+// hr endpoints\
+// must see all transaction except draft
 router.get(
 	"/reimbursement-by-cutoff",
 	jwtHelper.verifyToken,

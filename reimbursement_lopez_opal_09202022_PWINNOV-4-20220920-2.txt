@@ -1,0 +1,76 @@
+Employee Name:   Lopez, Opal
+Employee Number:	12035
+Date Submitted:		September 20, 2022
+Transaction Number: PWINNOV-4-20220920-2
+Amount:	Php 1200.00
+Status:	Submitted
+
+=== DETAILS ===
+CATEGORY: MEDICAL Claim Category
+N/A
+
+CATEGORY: APPLIANCE Claim Category
+N/A
+
+CATEGORY: Beauty & Wellness Claim Category
+N/A
+
+CATEGORY: FOOD, RESTAURANT & GROCERIES Claim Category
+Item # 1
+Date: September 20, 2022
+OR Number: 11111222223333
+Name of Establishment: KFC 6
+TIN of Establishment: 0111111111111
+Amount: Php 600.00
+Status: Submitted
+
+Item # 2
+Date: September 20, 2022
+OR Number: 11111222223333
+Name of Establishment: KFC 7
+TIN of Establishment: 0111111111111
+Amount: Php 600.00
+Status: Submitted
+
+CATEGORY: FASHION Claim Category
+N/A
+
+CATEGORY: ENTERTAINMENT Claim Category
+N/A
+
+CATEGORY: GADGETS Claim Category
+N/A
+
+CATEGORY: TRANSPORTATION Claim Category
+N/A
+
+CATEGORY: TRAVEL & LEISURE Claim Category
+N/A
+
+CATEGORY: CONNECTIVITY Claim Category
+N/A
+
+CATEGORY: Applications and Software Claim Category
+N/A
+
+CATEGORY: HOME IMROVEMENTS & FURNITURES Claim Category
+N/A
+
+CATEGORY: LIFE INSURANCE Claim Category
+N/A
+
+CATEGORY: Books and Subscriptions Claim Category
+N/A
+
+CATEGORY: OFFICE SUPPLIES Claim Category
+N/A
+
+CATEGORY: TRAINING & TUITION Claim Category
+N/A
+
+CATEGORY: Corporate Social Responsibility Claim Category
+N/A
+
+CATEGORY: LEAVE BUY BACK
+N/A
+
