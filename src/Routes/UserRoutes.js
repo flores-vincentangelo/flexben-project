@@ -11,17 +11,17 @@ let saltRounds = 10;
 
 // async function register(req, res, next) {
 // 	let user = new CredentialsModel();
-// 	user.Email = req.body.email;
+// 	user.EmployeeId = req.body.employeeId;
 // 	user.UnhashedPassword = req.body.password;
 
 // 	try {
-// 		let account = await DbAccounts.getAccountByEmployeeEmail(user.Email);
-// 		if (account) {
-// 			res.status(409).json({
-// 				...responses.conflictResponseBuilder("User already exists"),
-// 			});
-// 			return;
-// 		}
+// 		// let account = await DbAccounts.getAccountByEmployeeEmail(user.Email);
+// 		// if (account) {
+// 		// 	res.status(409).json({
+// 		// 		...responses.conflictResponseBuilder("User already exists"),
+// 		// 	});
+// 		// 	return;
+// 		// }
 // 		user.HashedPassword = await bcrypt.hash(
 // 			user.UnhashedPassword,
 // 			saltRounds

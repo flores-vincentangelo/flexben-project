@@ -1,0 +1,5 @@
+INSERT INTO companies (code,name,description,logo) VALUES (
+("PWINNOV","Pointwest Innovations Corporation","Pointwest Innovations Corporation","pointwest-logo.png")
+)
+
+
